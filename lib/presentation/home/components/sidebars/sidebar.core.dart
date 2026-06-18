@@ -1,0 +1,294 @@
+part of 'main.sidebars.dart';
+
+class Sidebar extends GetView<HomeController> {
+  const Sidebar({
+    super.key,
+    required this.onNewOrderPressed,
+    required this.onLockScreenPressed,
+    required this.onLogoutPressed,
+    this.onSelectedDestination,
+  });
+
+  final VoidCallback onNewOrderPressed;
+  final VoidCallback onLockScreenPressed;
+  final VoidCallback onLogoutPressed;
+  final ValueChanged<int>? onSelectedDestination;
+  static final _menuItems = NavMenu.values;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 240, // Increased slightly for breathing room
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(right: BorderSide(color: Colors.grey.shade100)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Header / Logo & Brand Section
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.medical_services_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'RSUD Soebandi',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 14,
+                        letterSpacing: 0.5,
+                        color: Color(0xFF1E293B),
+                      ),
+                    ),
+                    Text(
+                      'Review Management',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // User Profile Card Section
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade100),
+              ),
+              child: Row(
+                children: [
+                  Stack(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                          ),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            'SA',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Pulse status dot
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 1.5),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Super Admin',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        Text(
+                          'Online',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Color(0xFF10B981),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Action Button: New Template
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF6366F1).withOpacity(0.2),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.add_rounded, size: 18),
+                label: const Text(
+                  'New Template',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    letterSpacing: -0.1,
+                  ),
+                ),
+                onPressed: onNewOrderPressed,
+                style:
+                    ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF6366F1),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ).copyWith(
+                      backgroundColor: WidgetStateProperty.resolveWith((
+                        states,
+                      ) {
+                        if (states.contains(WidgetState.hovered)) {
+                          return const Color(0xFF4F46E5);
+                        }
+                        return const Color(0xFF6366F1);
+                      }),
+                    ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Navigation Links
+          Expanded(
+            child: Obx(
+              () => ListView(
+                padding: EdgeInsets.zero,
+                children: _menuItems
+                    .map(
+                      (menu) => SidebarItem(
+                        icon: menu.icon,
+                        label: menu.label,
+                        selected: controller.selectedNavIndex.value == menu,
+                        onTap: onSelectedDestination != null
+                            ? () => onSelectedDestination?.call(menu.index)
+                            : () {},
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+          ),
+
+          Divider(height: 1, color: Colors.grey.shade100),
+          const SizedBox(height: 8),
+
+          // Bottom Utilities
+          _buildUtilityItem(
+            icon: Icons.lock_outline_rounded,
+            label: 'Lock Screen',
+            onTap: onLockScreenPressed,
+          ),
+          _buildUtilityItem(
+            icon: Icons.logout_rounded,
+            label: 'Logout',
+            onTap: onLogoutPressed,
+            isDestructive: true,
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUtilityItem({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool isDestructive = false,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(10),
+          hoverColor: isDestructive
+              ? Colors.red.shade50.withOpacity(0.4)
+              : Colors.grey.shade50,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                Icon(
+                  icon,
+                  size: 18,
+                  color: isDestructive
+                      ? Colors.redAccent.shade200
+                      : Colors.grey.shade500,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: isDestructive
+                        ? Colors.redAccent.shade200
+                        : Colors.grey.shade600,
+                    letterSpacing: -0.15,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
