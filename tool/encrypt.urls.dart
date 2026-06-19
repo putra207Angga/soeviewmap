@@ -56,7 +56,7 @@ void main() async {
   final enc = Encrypter(AES(key, mode: AESMode.cbc));
 
   final urls = {
-    'LOCAL': 'http://pdesoebandi.id/informasi/',
+    'LOCAL': 'http://soeket.pdesoebandi.id',
     'DEV': '',
     'QAS': '',
     'PROD': '',

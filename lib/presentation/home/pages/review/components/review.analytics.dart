@@ -49,19 +49,25 @@ class ReviewAnalyticsPanel extends GetView<ReviewController> {
 
           // 2. Avg Response Time Card
           _buildAnalyticsCard(
-            title: 'AVG WAKTU RESPON',
+            title: controller.stats.value != null ? 'TINGKAT RESPON' : 'AVG WAKTU RESPON',
             value: avgResponse,
-            subtitle: 'Lebih cepat 18 menit dari target operasional RSUD.',
+            subtitle: controller.stats.value != null
+                ? 'Persentase ulasan yang berhasil ditanggapi oleh Tim Humas.'
+                : 'Lebih cepat 18 menit dari target operasional RSUD.',
             child: Row(
               children: [
-                const Icon(
-                  Icons.arrow_downward_rounded,
+                Icon(
+                  controller.stats.value != null
+                      ? Icons.check_circle_outline_rounded
+                      : Icons.arrow_downward_rounded,
                   size: 14,
-                  color: Color(0xFF10B981),
+                  color: const Color(0xFF10B981),
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  '-18m dari target',
+                  controller.stats.value != null
+                      ? 'Kinerja Bagus'
+                      : '-18m dari target',
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,

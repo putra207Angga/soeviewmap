@@ -23,7 +23,7 @@ enum Environments {
     label: 'local',
     icon: Icons.computer_rounded,
     color: Color(0xFFF59E0B),
-    encryptedUrl: '+u5805CqkX3bb7Q3qbdh+AkzUvc7dxEF6Xa2OsaTAmrpJSkNYM2BXYVzUb3Ze7jF',
+    encryptedUrl: '+CTlaDYzXo9HJ6JbmY3MqRJbIJJTNgfNvGLoabesGLo=',
   );
 
   final String label;

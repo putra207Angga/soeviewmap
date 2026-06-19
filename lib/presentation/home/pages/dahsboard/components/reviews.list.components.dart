@@ -288,10 +288,11 @@ class ReviewsListComponent extends GetView<DahsboardController> {
     Color sentimentColor;
     String sentimentText;
 
-    if (item.sentiment == 'positive') {
+    final sentimentLower = item.sentiment.toLowerCase();
+    if (sentimentLower == 'positive') {
       sentimentColor = const Color(0xFF10B981);
       sentimentText = 'Passed Vibe Check ✨';
-    } else if (item.sentiment == 'negative') {
+    } else if (sentimentLower == 'negative') {
       sentimentColor = const Color(0xFFF43F5E);
       sentimentText = 'Bad Vibe Alert 🚨';
     } else {

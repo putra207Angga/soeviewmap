@@ -47,23 +47,52 @@ class TemplateScreen extends GetView<TemplateController> {
                         ],
                       ),
                     ),
-                    TextButton.icon(
-                      onPressed: () => _confirmResetDialog(context),
-                      icon: const Icon(Icons.restore_rounded, size: 14),
-                      label: const Text(
-                        'Reset Default',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () => _openCreateCustomDialog(context),
+                          icon: const Icon(Icons.add_rounded, size: 14),
+                          label: const Text(
+                            'New Template',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.colorScheme.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            elevation: 0,
+                          ),
                         ),
-                      ),
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.redAccent,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
+                        const SizedBox(width: 8),
+                        TextButton.icon(
+                          onPressed: () => _confirmResetDialog(context),
+                          icon: const Icon(Icons.restore_rounded, size: 14),
+                          label: const Text(
+                            'Reset Default',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.redAccent,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
@@ -112,6 +141,8 @@ class TemplateScreen extends GetView<TemplateController> {
                         templateText: templateText,
                         onEditTap: () =>
                             _openEditDialog(context, rating, templateText),
+                        onDeleteTap: () =>
+                            _confirmDeleteTemplate(context, rating),
                       );
                     },
                   );
@@ -161,7 +192,7 @@ class TemplateScreen extends GetView<TemplateController> {
                       ),
                       child: Center(
                         child: Text(
-                          'Belum ada template kustom. Silakan klik Tambah Kustom atau New Template di Sidebar.',
+                          'Belum ada template kustom. Silakan klik Tambah Kustom atau New Template di bagian atas.',
                           style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
                         ),
                       ),
@@ -381,6 +412,47 @@ class TemplateScreen extends GetView<TemplateController> {
                   backgroundColor: isDark ? const Color(0xFF1E222B) : Colors.white.withOpacity(0.95),
                   colorText: isDark ? Colors.white : Colors.black,
                 );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+              ),
+              child: const Text('Hapus', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _confirmDeleteTemplate(BuildContext context, int rating) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: isDark ? const Color(0xFF1E222B) : Colors.white,
+          title: const Text(
+            'Hapus Template Bintang',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            'Apakah Anda yakin ingin menghapus template untuk bintang $rating?',
+            style: const TextStyle(fontSize: 11, height: 1.4),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(),
+              child: Text(
+                'Batal',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey.shade500),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                controller.deleteTemplate(rating);
+                Get.back();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.redAccent,

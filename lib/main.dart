@@ -14,6 +14,7 @@ void main() async {
 
   var initialRoute = await Routes.initialRoute;
   Get.put(ConfigEnvironments());
+  Get.put(ApiService());
   runApp(Main(initialRoute));
 }
 

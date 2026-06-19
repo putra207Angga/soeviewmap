@@ -286,32 +286,30 @@ class ReviewTableComponent extends GetView<ReviewController> {
   }
 
   Widget _buildEmptyState(bool isDark) {
-    return Expanded(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.search_off_rounded,
-              size: 48,
-              color: Colors.grey.shade500,
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.search_off_rounded,
+            size: 48,
+            color: Colors.grey.shade500,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Tidak ada ulasan ditemukan',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
             ),
-            const SizedBox(height: 12),
-            Text(
-              'Tidak ada ulasan ditemukan',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
-              ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Ganti filter Anda untuk mencari yang lain.',
-              style: TextStyle(fontSize: 11, color: Colors.grey),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Ganti filter Anda untuk mencari yang lain.',
+            style: TextStyle(fontSize: 11, color: Colors.grey),
+          ),
+        ],
       ),
     );
   }

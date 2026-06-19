@@ -43,10 +43,34 @@ class TemplateController extends GetxController {
   // Custom templates configuration (by Location / Keyword)
   final customTemplates = <CustomTemplate>[].obs;
 
+  final isLoading = false.obs;
+
   @override
   void onInit() {
     super.onInit();
-    _loadDefaultTemplates();
+    fetchTemplates();
+  }
+
+  Future<void> fetchTemplates() async {
+    isLoading.value = true;
+    try {
+      final response = await TemplateDao.getTemplates();
+      if (response.statusCode == 200 && response.body != null) {
+        final List<dom.ReviewTemplateModel> apiTemplates = response.body!;
+        final map = <int, String>{};
+        for (var item in apiTemplates) {
+          map[item.rating] = item.templateText;
+        }
+        starTemplates.assignAll(map);
+      } else {
+        _loadDefaultTemplates();
+      }
+    } catch (e) {
+      print('TemplateController fetchTemplates error: $e');
+      _loadDefaultTemplates();
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   void _loadDefaultTemplates() {
@@ -78,9 +102,61 @@ class TemplateController extends GetxController {
     ]);
   }
 
-  void updateTemplate(int rating, String text) {
-    starTemplates[rating] = text;
-    starTemplates.refresh();
+  Future<void> updateTemplate(int rating, String text) async {
+    isLoading.value = true;
+    try {
+      final exists = starTemplates.containsKey(rating) && starTemplates[rating] != null && starTemplates[rating]!.isNotEmpty;
+      final response = exists
+          ? await TemplateDao.updateTemplate(
+              rating: rating,
+              templateText: text,
+            )
+          : await TemplateDao.saveTemplate(
+              rating: rating,
+              templateText: text,
+            );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        starTemplates[rating] = text;
+        starTemplates.refresh();
+        Get.snackbar(
+          'Sukses',
+          exists
+              ? 'Template balasan berhasil diperbarui di server.'
+              : 'Template balasan baru berhasil dibuat di server.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.green.shade50,
+          colorText: Colors.green.shade900,
+          icon: const Icon(Icons.check_circle_outline, color: Colors.green),
+          margin: const EdgeInsets.all(16),
+          borderRadius: 12,
+        );
+      } else {
+        Get.snackbar(
+          'Gagal',
+          'Gagal menyimpan template: ${response.statusText}',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red.shade50,
+          colorText: Colors.red.shade900,
+          icon: const Icon(Icons.error_outline_rounded, color: Colors.red),
+          margin: const EdgeInsets.all(16),
+          borderRadius: 12,
+        );
+      }
+    } catch (e) {
+      print('TemplateController updateTemplate error: $e');
+      Get.snackbar(
+        'Error',
+        'Terjadi kesalahan saat menyimpan template: $e',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red.shade50,
+        colorText: Colors.red.shade900,
+        icon: const Icon(Icons.error_outline_rounded, color: Colors.red),
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   void addCustomTemplate(CustomTemplate template) {
@@ -103,6 +179,52 @@ class TemplateController extends GetxController {
   }
 
   void resetTemplates() {
-    _loadDefaultTemplates();
+    fetchTemplates();
+  }
+
+  Future<void> deleteTemplate(int rating) async {
+    isLoading.value = true;
+    try {
+      final response = await TemplateDao.deleteTemplate(rating: rating);
+      if (response.statusCode == 200) {
+        starTemplates.remove(rating);
+        starTemplates.refresh();
+        Get.snackbar(
+          'Sukses',
+          'Template bintang $rating berhasil dihapus.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.green.shade50,
+          colorText: Colors.green.shade900,
+          icon: const Icon(Icons.check_circle_outline, color: Colors.green),
+          margin: const EdgeInsets.all(16),
+          borderRadius: 12,
+        );
+      } else {
+        Get.snackbar(
+          'Gagal',
+          'Gagal menghapus template: ${response.statusText}',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red.shade50,
+          colorText: Colors.red.shade900,
+          icon: const Icon(Icons.error_outline_rounded, color: Colors.red),
+          margin: const EdgeInsets.all(16),
+          borderRadius: 12,
+        );
+      }
+    } catch (e) {
+      print('TemplateController deleteTemplate error: $e');
+      Get.snackbar(
+        'Error',
+        'Terjadi kesalahan saat menghapus template: $e',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red.shade50,
+        colorText: Colors.red.shade900,
+        icon: const Icon(Icons.error_outline_rounded, color: Colors.red),
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 }

@@ -63,6 +63,14 @@ class BalasTableComponent extends GetView<BalasController> {
                     ),
                     Expanded(
                       child: Obx(() {
+                        if (controller.isLoading.value && controller.replyLogs.isEmpty) {
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(vertical: 40),
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+                        }
                         final items = controller.replyLogs;
                         if (items.isEmpty) {
                           return _buildEmptyState(isDark);
