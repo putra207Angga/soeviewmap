@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable
+
 part of 'main.components.dart';
 
 class BotConfigPanel extends GetView<TemplateController> {
@@ -84,90 +86,91 @@ class BotConfigPanel extends GetView<TemplateController> {
               ],
             ),
             const SizedBox(height: 16),
-            Divider(
-              height: 1,
-              color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
-            ),
-            const SizedBox(height: 16),
-            // Config Inputs: Webhook URL & Secret Token
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final isWide = constraints.maxWidth > 600;
+            // Divider(
+            //   height: 1,
+            //   color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
+            // ),
+            // const SizedBox(height: 16),
+            // // Config Inputs: Webhook URL & Secret Token
+            // LayoutBuilder(
+            //   builder: (context, constraints) {
+            //     final isWide = constraints.maxWidth > 600;
 
-                final webhookField = Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'WEBHOOK URL',
-                      style: TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade500,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Obx(() => _buildCopyableField(
-                          context,
-                          text: controller.webhookUrl.value,
-                          isDark: isDark,
-                          theme: theme,
-                          label: 'Webhook URL',
-                        )),
-                  ],
-                );
+            //     final webhookField = Column(
+            //       crossAxisAlignment: CrossAxisAlignment.start,
+            //       children: [
+            //         Text(
+            //           'WEBHOOK URL',
+            //           style: TextStyle(
+            //             fontSize: 9,
+            //             fontWeight: FontWeight.bold,
+            //             color: Colors.grey.shade500,
+            //             letterSpacing: 0.5,
+            //           ),
+            //         ),
+            //         const SizedBox(height: 6),
+            //         Obx(() => _buildCopyableField(
+            //               context,
+            //               text: controller.webhookUrl.value,
+            //               isDark: isDark,
+            //               theme: theme,
+            //               label: 'Webhook URL',
+            //             )),
+            //       ],
+            //     );
 
-                final tokenField = Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'SECRET TOKEN',
-                      style: TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade500,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Obx(() => _buildCopyableField(
-                          context,
-                          text: controller.secretToken.value,
-                          isDark: isDark,
-                          theme: theme,
-                          label: 'Secret Token',
-                          obscure: true,
-                        )),
-                  ],
-                );
+            //     final tokenField = Column(
+            //       crossAxisAlignment: CrossAxisAlignment.start,
+            //       children: [
+            //         Text(
+            //           'SECRET TOKEN',
+            //           style: TextStyle(
+            //             fontSize: 9,
+            //             fontWeight: FontWeight.bold,
+            //             color: Colors.grey.shade500,
+            //             letterSpacing: 0.5,
+            //           ),
+            //         ),
+            //         const SizedBox(height: 6),
+            //         Obx(() => _buildCopyableField(
+            //               context,
+            //               text: controller.secretToken.value,
+            //               isDark: isDark,
+            //               theme: theme,
+            //               label: 'Secret Token',
+            //               obscure: true,
+            //             )),
+            //       ],
+            //     );
 
-                if (isWide) {
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(flex: 3, child: webhookField),
-                      const SizedBox(width: 16),
-                      Expanded(flex: 2, child: tokenField),
-                    ],
-                  );
-                } else {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      webhookField,
-                      const SizedBox(height: 16),
-                      tokenField,
-                    ],
-                  );
-                }
-              },
-            ),
+            //     if (isWide) {
+            //       return Row(
+            //         crossAxisAlignment: CrossAxisAlignment.start,
+            //         children: [
+            //           Expanded(flex: 3, child: webhookField),
+            //           const SizedBox(width: 16),
+            //           Expanded(flex: 2, child: tokenField),
+            //         ],
+            //       );
+            //     } else {
+            //       return Column(
+            //         crossAxisAlignment: CrossAxisAlignment.stretch,
+            //         children: [
+            //           webhookField,
+            //           const SizedBox(height: 16),
+            //           tokenField,
+            //         ],
+            //       );
+            //    }
+            //  },
+            // ),
           ],
         ),
       ),
     );
   }
 
+  // ignore: unused_element
   Widget _buildCopyableField(
     BuildContext context, {
     required String text,
@@ -183,9 +186,7 @@ class BotConfigPanel extends GetView<TemplateController> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: isDark
-            ? Colors.black.withOpacity(0.2)
-            : Colors.grey.shade100,
+        color: isDark ? Colors.black.withOpacity(0.2) : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
@@ -219,7 +220,9 @@ class BotConfigPanel extends GetView<TemplateController> {
                     : Colors.white.withOpacity(0.95),
                 colorText: isDark ? Colors.white : Colors.black,
                 borderWidth: 1,
-                borderColor: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
+                borderColor: isDark
+                    ? const Color(0xFF2E3440)
+                    : Colors.grey.shade200,
                 duration: const Duration(seconds: 2),
               );
             },
@@ -255,7 +258,10 @@ class _StatusIndicatorDotState extends State<_StatusIndicatorDot>
       vsync: this,
       duration: const Duration(seconds: 1),
     )..repeat(reverse: true);
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.6).animate(_animController);
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.6,
+    ).animate(_animController);
   }
 
   @override
@@ -266,7 +272,9 @@ class _StatusIndicatorDotState extends State<_StatusIndicatorDot>
 
   @override
   Widget build(BuildContext context) {
-    final baseColor = widget.isActive ? const Color(0xFF10B981) : Colors.grey.shade400;
+    final baseColor = widget.isActive
+        ? const Color(0xFF10B981)
+        : Colors.grey.shade400;
 
     return ScaleTransition(
       scale: _scaleAnimation,

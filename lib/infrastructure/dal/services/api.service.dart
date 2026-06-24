@@ -36,7 +36,9 @@ class ApiService extends GetConnect implements GetxService {
         query: query,
         decoder: decoder,
       );
-      print('ApiService: GET Response status: ${response.statusCode}, body: ${response.body}');
+      print(
+        'ApiService: GET Response status: ${response.statusCode}, body: ${response.body}',
+      );
       return response;
     } catch (e) {
       print('ApiService: GET Request failed with exception: $e');
@@ -53,7 +55,9 @@ class ApiService extends GetConnect implements GetxService {
     Decoder<T>? decoder,
   }) async {
     try {
-      print('ApiService: Sending POST request to: ${httpClient.baseUrl}$url, body: $body');
+      print(
+        'ApiService: Sending POST request to: ${httpClient.baseUrl}$url, body: $body',
+      );
       final response = await post<T>(
         url,
         body,
@@ -61,7 +65,9 @@ class ApiService extends GetConnect implements GetxService {
         query: query,
         decoder: decoder,
       );
-      print('ApiService: POST Response status: ${response.statusCode}, body: ${response.body}');
+      print(
+        'ApiService: POST Response status: ${response.statusCode}, body: ${response.body}',
+      );
       return response;
     } catch (e) {
       print('ApiService: POST Request failed with exception: $e');

@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 
+import 'package:flutter_web_plugins/url_strategy.dart';
+
 void main() async {
+  usePathUrlStrategy();
   WidgetsFlutterBinding.ensureInitialized();
-  
   // Initialize and register SecureStorageServices
   final secureStorage = SecureStorageServices();
   await secureStorage.init();

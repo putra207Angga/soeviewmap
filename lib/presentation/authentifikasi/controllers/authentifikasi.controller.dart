@@ -82,7 +82,9 @@ class AuthentifikasiController extends GetxController {
         final success = resBody['success'] as bool? ?? false;
         final message = resBody['message'] as String? ?? 'Login successful.';
 
-        if (success) {
+        final appAccess = resBody['data']['app_access'] as num;
+
+        if (success && (appAccess == 3 || appAccess == 0)) {
           final data = resBody['data'] as Map<String, dynamic>?;
           final token = data?['token'] as String? ?? '';
 

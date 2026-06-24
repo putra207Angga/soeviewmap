@@ -11,53 +11,53 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
       titleSpacing: 8,
       backgroundColor: Colors.white,
       foregroundColor: Theme.of(context).cardColor,
-      title: Row(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  ...NavMenu.headerNav.map(
-                    (menu) => Obx(
-                      () => TextButton(
-                        onPressed: () => controller.toNavigation(
-                          NavMenu.headerNav.indexOf(menu),
-                        ),
-                        child: Text(
-                          menu.label,
-                          style: controller.selectedNavIndex.value == menu
-                              ? const TextStyle(fontWeight: FontWeight.bold)
-                              : null,
-                        ),
-                      ),
+      title: Autocomplete<NavMenu>(
+        optionsBuilder: (text) => NavMenu.values,
+        displayStringForOption: (option) => option.label,
+        onSelected: (value) => controller.toNavigation(value.index),
+        optionsViewBuilder: (context, onSelected, options) => Material(
+          elevation: 8,
+          shadowColor: Colors.black.withOpacity(0.15),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+            side: BorderSide.none,
+          ),
+          color: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF1E222B)
+              : Colors.white,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: options.length,
+            itemBuilder: (context, index) {
+              final option = options.elementAt(index);
+              return ListTile(
+                title: Text(option.label),
+                onTap: () => onSelected(option),
+              );
+            },
+          ),
+        ),
+        fieldViewBuilder:
+            (context, textEditingController, focusNode, onFieldSubmitted) =>
+                TextField(
+                  focusNode: focusNode,
+                  controller: textEditingController,
+                  onEditingComplete: onFieldSubmitted,
+                  decoration: InputDecoration(
+                    hintText: 'Cari menu...',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-        ],
+                ),
       ),
       actions: [
-        if (context.isLargeTablet)
-          SizedBox(
-            width: context.isTablet ? 220 : 280,
-            height: 36,
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Cari menu...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-              ),
-            ),
-          ),
         const SizedBox(width: 4),
         PopupMenuButton<void>(
           tooltip: 'Notifikasi',
@@ -68,11 +68,10 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
           offset: const Offset(0, 42),
           elevation: 8,
           shadowColor: Colors.black.withOpacity(0.15),
-          shape: const ChatBubbleShapeBorder(
-            arrowOffset: 16,
-            borderRadius: 16,
-          ),
-          color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1E222B) : Colors.white,
+          shape: const ChatBubbleShapeBorder(arrowOffset: 16, borderRadius: 16),
+          color: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF1E222B)
+              : Colors.white,
           itemBuilder: (context) {
             final isDark = Theme.of(context).brightness == Brightness.dark;
             return [
@@ -107,7 +106,10 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
                             ],
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.red.shade50,
                               borderRadius: BorderRadius.circular(10),
@@ -124,14 +126,20 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
                         ],
                       ),
                       const SizedBox(height: 10),
-                      Divider(height: 1, color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade100),
+                      Divider(
+                        height: 1,
+                        color: isDark
+                            ? const Color(0xFF2E3440)
+                            : Colors.grey.shade100,
+                      ),
                       const SizedBox(height: 10),
-                      
+
                       // Notifications List
                       _buildNotificationItem(
                         title: 'Auto-Reply Bintang 5 Terkirim',
                         time: '2m ago',
-                        desc: 'Bot membalas ulasan dari Agus Santoso (Poliklinik Kebidanan).',
+                        desc:
+                            'Bot membalas ulasan dari Agus Santoso (Poliklinik Kebidanan).',
                         icon: Icons.check_circle_rounded,
                         iconColor: const Color(0xFF10B981),
                         isDark: isDark,
@@ -140,7 +148,8 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
                       _buildNotificationItem(
                         title: 'Ulasan Negatif Masuk (IGD)',
                         time: '15m ago',
-                        desc: 'Ulasan bintang 2 masuk. Memerlukan peninjauan manual.',
+                        desc:
+                            'Ulasan bintang 2 masuk. Memerlukan peninjauan manual.',
                         icon: Icons.warning_amber_rounded,
                         iconColor: const Color(0xFFF59E0B),
                         isDark: isDark,
@@ -155,7 +164,12 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
                         isDark: isDark,
                       ),
                       const SizedBox(height: 12),
-                      Divider(height: 1, color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade100),
+                      Divider(
+                        height: 1,
+                        color: isDark
+                            ? const Color(0xFF2E3440)
+                            : Colors.grey.shade100,
+                      ),
                       const SizedBox(height: 8),
                       Center(
                         child: Text(
@@ -275,7 +289,7 @@ class ChatBubbleShapeBorder extends ShapeBorder {
     final r = borderRadius;
     final ah = arrowHeight;
     final aw = arrowWidth;
-    
+
     final arrowX = rect.right - arrowOffset - (aw / 2);
 
     final path = Path()
@@ -286,16 +300,28 @@ class ChatBubbleShapeBorder extends ShapeBorder {
       ..lineTo(arrowX + (aw / 2), rect.top + ah)
       // Top-right corner
       ..lineTo(rect.right - r, rect.top + ah)
-      ..arcToPoint(Offset(rect.right, rect.top + ah + r), radius: Radius.circular(r))
+      ..arcToPoint(
+        Offset(rect.right, rect.top + ah + r),
+        radius: Radius.circular(r),
+      )
       // Bottom-right corner
       ..lineTo(rect.right, rect.bottom - r)
-      ..arcToPoint(Offset(rect.right - r, rect.bottom), radius: Radius.circular(r))
+      ..arcToPoint(
+        Offset(rect.right - r, rect.bottom),
+        radius: Radius.circular(r),
+      )
       // Bottom-left corner
       ..lineTo(rect.left + r, rect.bottom)
-      ..arcToPoint(Offset(rect.left, rect.bottom - r), radius: Radius.circular(r))
+      ..arcToPoint(
+        Offset(rect.left, rect.bottom - r),
+        radius: Radius.circular(r),
+      )
       // Top-left corner
       ..lineTo(rect.left, rect.top + ah + r)
-      ..arcToPoint(Offset(rect.left + r, rect.top + ah), radius: Radius.circular(r))
+      ..arcToPoint(
+        Offset(rect.left + r, rect.top + ah),
+        radius: Radius.circular(r),
+      )
       ..close();
 
     return path;
