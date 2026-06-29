@@ -1,8 +1,9 @@
 part of 'main.daos.dart';
 
-class ReviewDao {
+class ReviewDao extends ApiService {
+  static ReviewDao get use => ReviewDao();
   // Get reviews list
-  static Future<Response<List<ReviewModel>>> getReviews({
+  Future<Response<List<ReviewModel>>> getReviews({
     String? status,
     String? timeRange,
     int? rating,
@@ -16,11 +17,13 @@ class ReviewDao {
     if (sentiment != null) query['sentiment'] = sentiment;
     if (limit != null) query['limit'] = limit.toString();
 
-    return await ApiService.to.getRequest<List<ReviewModel>>(
+    return await getRequest<List<ReviewModel>>(
       '/api/reviews',
       query: query.isNotEmpty ? query : null,
       decoder: (data) {
-        print('ReviewDao.getReviews: decoder received data of type ${data.runtimeType}: $data');
+        print(
+          'ReviewDao.getReviews: decoder received data of type ${data.runtimeType}: $data',
+        );
         dynamic decoded = data;
         if (data is String) {
           try {
@@ -31,14 +34,20 @@ class ReviewDao {
         }
         if (decoded is List) {
           return decoded
-              .map((e) => ReviewModel.fromJson(Map<String, dynamic>.from(e as Map)))
+              .map(
+                (e) =>
+                    ReviewModel.fromJson(Map<String, dynamic>.from(e as Map)),
+              )
               .toList();
         }
         if (decoded is Map) {
           final listData = decoded['data'] as List?;
           if (listData != null) {
             return listData
-                .map((e) => ReviewModel.fromJson(Map<String, dynamic>.from(e as Map)))
+                .map(
+                  (e) =>
+                      ReviewModel.fromJson(Map<String, dynamic>.from(e as Map)),
+                )
                 .toList();
           }
         }
@@ -48,11 +57,13 @@ class ReviewDao {
   }
 
   // Get reviews statistics
-  static Future<Response<ReviewStatsModel>> getStats() async {
-    return await ApiService.to.getRequest<ReviewStatsModel>(
+  Future<Response<ReviewStatsModel>> getStats() async {
+    return await getRequest<ReviewStatsModel>(
       '/api/reviews/stats',
       decoder: (data) {
-        print('ReviewDao.getStats: decoder received data of type ${data.runtimeType}: $data');
+        print(
+          'ReviewDao.getStats: decoder received data of type ${data.runtimeType}: $data',
+        );
         dynamic decoded = data;
         if (data is String) {
           try {
@@ -64,7 +75,9 @@ class ReviewDao {
         if (decoded is Map) {
           final statsData = decoded['data'] as Map?;
           if (statsData != null) {
-            return ReviewStatsModel.fromJson(Map<String, dynamic>.from(statsData));
+            return ReviewStatsModel.fromJson(
+              Map<String, dynamic>.from(statsData),
+            );
           }
         }
         return ReviewStatsModel.fromJson({});
@@ -73,11 +86,13 @@ class ReviewDao {
   }
 
   // Get sentiment analysis
-  static Future<Response<SentimentAnalysisModel>> getSentimentAnalysis() async {
-    return await ApiService.to.getRequest<SentimentAnalysisModel>(
+  Future<Response<SentimentAnalysisModel>> getSentimentAnalysis() async {
+    return await getRequest<SentimentAnalysisModel>(
       '/api/reviews/sentiment-analysis',
       decoder: (data) {
-        print('ReviewDao.getSentimentAnalysis: decoder received data of type ${data.runtimeType}: $data');
+        print(
+          'ReviewDao.getSentimentAnalysis: decoder received data of type ${data.runtimeType}: $data',
+        );
         dynamic decoded = data;
         if (data is String) {
           try {
@@ -89,7 +104,9 @@ class ReviewDao {
         if (decoded is Map) {
           final analysisData = decoded['data'] as Map?;
           if (analysisData != null) {
-            return SentimentAnalysisModel.fromJson(Map<String, dynamic>.from(analysisData));
+            return SentimentAnalysisModel.fromJson(
+              Map<String, dynamic>.from(analysisData),
+            );
           }
         }
         return SentimentAnalysisModel.fromJson({});

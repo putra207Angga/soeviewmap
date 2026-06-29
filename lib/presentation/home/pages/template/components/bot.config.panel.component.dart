@@ -86,84 +86,88 @@ class BotConfigPanel extends GetView<TemplateController> {
               ],
             ),
             const SizedBox(height: 16),
-            // Divider(
-            //   height: 1,
-            //   color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
-            // ),
-            // const SizedBox(height: 16),
-            // // Config Inputs: Webhook URL & Secret Token
-            // LayoutBuilder(
-            //   builder: (context, constraints) {
-            //     final isWide = constraints.maxWidth > 600;
+            Divider(
+              height: 1,
+              color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
+            ),
+            const SizedBox(height: 16),
+            // Config Inputs: Webhook URL & Secret Token
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth > 600;
 
-            //     final webhookField = Column(
-            //       crossAxisAlignment: CrossAxisAlignment.start,
-            //       children: [
-            //         Text(
-            //           'WEBHOOK URL',
-            //           style: TextStyle(
-            //             fontSize: 9,
-            //             fontWeight: FontWeight.bold,
-            //             color: Colors.grey.shade500,
-            //             letterSpacing: 0.5,
-            //           ),
-            //         ),
-            //         const SizedBox(height: 6),
-            //         Obx(() => _buildCopyableField(
-            //               context,
-            //               text: controller.webhookUrl.value,
-            //               isDark: isDark,
-            //               theme: theme,
-            //               label: 'Webhook URL',
-            //             )),
-            //       ],
-            //     );
+                final webhookField = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Message',
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey.shade500,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Obx(
+                      () => _buildCopyableField(
+                        context,
+                        text: controller.webhookUrl.value,
+                        isDark: isDark,
+                        theme: theme,
+                        label: 'Message',
+                      ),
+                    ),
+                  ],
+                );
 
-            //     final tokenField = Column(
-            //       crossAxisAlignment: CrossAxisAlignment.start,
-            //       children: [
-            //         Text(
-            //           'SECRET TOKEN',
-            //           style: TextStyle(
-            //             fontSize: 9,
-            //             fontWeight: FontWeight.bold,
-            //             color: Colors.grey.shade500,
-            //             letterSpacing: 0.5,
-            //           ),
-            //         ),
-            //         const SizedBox(height: 6),
-            //         Obx(() => _buildCopyableField(
-            //               context,
-            //               text: controller.secretToken.value,
-            //               isDark: isDark,
-            //               theme: theme,
-            //               label: 'Secret Token',
-            //               obscure: true,
-            //             )),
-            //       ],
-            //     );
+                final tokenField = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Time Last Checked',
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey.shade500,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Obx(
+                      () => _buildCopyableField(
+                        context,
+                        text: controller.secretToken.value,
+                        isDark: isDark,
+                        theme: theme,
+                        label: 'Time Last Checked',
+                        obscure: true,
+                      ),
+                    ),
+                  ],
+                );
 
-            //     if (isWide) {
-            //       return Row(
-            //         crossAxisAlignment: CrossAxisAlignment.start,
-            //         children: [
-            //           Expanded(flex: 3, child: webhookField),
-            //           const SizedBox(width: 16),
-            //           Expanded(flex: 2, child: tokenField),
-            //         ],
-            //       );
-            //     } else {
-            //       return Column(
-            //         crossAxisAlignment: CrossAxisAlignment.stretch,
-            //         children: [
-            //           webhookField,
-            //           const SizedBox(height: 16),
-            //           tokenField,
-            //         ],
-            //       );
-            //    }
-            //  },
-            // ),
+                if (isWide) {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 3, child: webhookField),
+                      const SizedBox(width: 16),
+                      Expanded(flex: 2, child: tokenField),
+                    ],
+                  );
+                } else {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      webhookField,
+                      const SizedBox(height: 16),
+                      tokenField,
+                    ],
+                  );
+                }
+              },
+            ),
           ],
         ),
       ),

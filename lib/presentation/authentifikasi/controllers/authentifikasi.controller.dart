@@ -70,7 +70,7 @@ class AuthentifikasiController extends GetxController {
     isLoading.value = true;
 
     try {
-      final response = await AuthDao.login(
+      final response = await AuthDao.use.login(
         username: usernameController.text,
         password: passwordController.text,
       );

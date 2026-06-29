@@ -9,14 +9,16 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 void main() async {
   usePathUrlStrategy();
   WidgetsFlutterBinding.ensureInitialized();
-  // Initialize and register SecureStorageServices
-  final secureStorage = SecureStorageServices();
-  await secureStorage.init();
-  Get.put<SecureStorageServices>(secureStorage, permanent: true);
-
+  // Initialize SecureStorageServices and load env keys before other services
+  Get.put<SecureStorageServices>(SecureStorageServices(), permanent: true);
+  // Register ConfigEnvironments after SecureStorage loads keys
+  Get.put<ConfigEnvironments>(ConfigEnvironments());
+  // Initialize SecureStorageServices for env keys before other services
+  // Initialise configuration (load decryption keys)
+  await ConfigEnvironments.to.initialize();
+  // Register ApiService after ConfigEnvironments is ready
+  Get.put<ApiService>(ApiService());
   var initialRoute = await Routes.initialRoute;
-  Get.put(ConfigEnvironments());
-  Get.put(ApiService());
   runApp(Main(initialRoute));
 }
 

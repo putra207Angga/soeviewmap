@@ -3,19 +3,25 @@ part of 'main.services.dart';
 class ApiService extends GetConnect implements GetxService {
   static ApiService get to => Get.find<ApiService>();
 
-  @override
-  void onInit() {
-    super.onInit();
-    httpClient.baseUrl = ConfigEnvironments.to.environments.url;
-    ever(
-      ConfigEnvironments.to._currentEnvironments,
-      (envs) => httpClient.baseUrl = envs.url,
-    );
-    httpClient.timeout = Duration(seconds: 15);
+  ApiService() {
+    _initializeHttpClient();
+  }
+
+  void _initializeHttpClient() {
+    if (Get.isRegistered<ConfigEnvironments>()) {
+      httpClient.baseUrl = ConfigEnvironments.to.environments.url;
+      ever(
+        ConfigEnvironments.to._currentEnvironments,
+        (envs) => httpClient.baseUrl = envs.url,
+      );
+    }
+    httpClient.timeout = const Duration(seconds: 15);
     httpClient.addAuthenticator<dynamic>((request) {
-      final token = SecureStorageServices.to.read('token') ?? '';
-      if (token.isNotEmpty) {
-        request.headers['Authorization'] = 'Bearer $token';
+      if (Get.isRegistered<SecureStorageServices>()) {
+        final token = SecureStorageServices.to.read('token') ?? '';
+        if (token.isNotEmpty) {
+          request.headers['Authorization'] = 'Bearer $token';
+        }
       }
       return request;
     });

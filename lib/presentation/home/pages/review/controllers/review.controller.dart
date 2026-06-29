@@ -42,7 +42,7 @@ class ReviewController extends GetxController {
 
   Future<void> fetchStats() async {
     try {
-      final response = await ReviewDao.getStats();
+      final response = await ReviewDao.use.getStats();
       if (response.statusCode == 200 && response.body != null) {
         stats.value = response.body;
       }
@@ -79,7 +79,7 @@ class ReviewController extends GetxController {
         apiRating = int.tryParse(stars);
       }
 
-      final response = await ReviewDao.getReviews(
+      final response = await ReviewDao.use.getReviews(
         status: apiStatus,
         timeRange: apiTimeRange,
         rating: apiRating,

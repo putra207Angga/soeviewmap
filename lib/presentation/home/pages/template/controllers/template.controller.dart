@@ -48,13 +48,27 @@ class TemplateController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    fetchBost();
     fetchTemplates();
+  }
+
+  Future<void> fetchBost() async {
+    try {
+      final response = await BotDao.use.getStatus();
+      if (response.statusCode == 200 && response.body != null) {
+        botActiveStatus.value = response.body!.botStatus != "ERROR";
+        webhookUrl.value = response.body!.errorMessage;
+        secretToken.value = response.body!.lastCheckedAt.toIso8601String();
+      }
+    } catch (e) {
+      print('ReviewController fetchStats error: $e');
+    }
   }
 
   Future<void> fetchTemplates() async {
     isLoading.value = true;
     try {
-      final response = await TemplateDao.getTemplates();
+      final response = await TemplateDao.use.getTemplates();
       if (response.statusCode == 200 && response.body != null) {
         final List<dom.ReviewTemplateModel> apiTemplates = response.body!;
         final map = <int, String>{};
@@ -105,13 +119,16 @@ class TemplateController extends GetxController {
   Future<void> updateTemplate(int rating, String text) async {
     isLoading.value = true;
     try {
-      final exists = starTemplates.containsKey(rating) && starTemplates[rating] != null && starTemplates[rating]!.isNotEmpty;
+      final exists =
+          starTemplates.containsKey(rating) &&
+          starTemplates[rating] != null &&
+          starTemplates[rating]!.isNotEmpty;
       final response = exists
-          ? await TemplateDao.updateTemplate(
+          ? await TemplateDao.use.updateTemplate(
               rating: rating,
               templateText: text,
             )
-          : await TemplateDao.saveTemplate(
+          : await TemplateDao.use.saveTemplate(
               rating: rating,
               templateText: text,
             );
@@ -185,7 +202,7 @@ class TemplateController extends GetxController {
   Future<void> deleteTemplate(int rating) async {
     isLoading.value = true;
     try {
-      final response = await TemplateDao.deleteTemplate(rating: rating);
+      final response = await TemplateDao.use.deleteTemplate(rating: rating);
       if (response.statusCode == 200) {
         starTemplates.remove(rating);
         starTemplates.refresh();

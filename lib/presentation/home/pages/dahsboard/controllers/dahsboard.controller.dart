@@ -135,7 +135,7 @@ class DahsboardController extends GetxController {
 
   Future<void> fetchStats() async {
     try {
-      final response = await ReviewDao.getStats();
+      final response = await ReviewDao.use.getStats();
       if (response.statusCode == 200 && response.body != null) {
         stats.value = response.body;
       }
@@ -146,7 +146,7 @@ class DahsboardController extends GetxController {
 
   Future<void> fetchSentimentAnalysis() async {
     try {
-      final response = await ReviewDao.getSentimentAnalysis();
+      final response = await ReviewDao.use.getSentimentAnalysis();
       if (response.statusCode == 200 && response.body != null) {
         sentimentAnalysis.value = response.body;
       }
@@ -163,7 +163,7 @@ class DahsboardController extends GetxController {
         apiSentiment = selectedSentiment.value.toUpperCase();
       }
 
-      final response = await ReviewDao.getReviews(
+      final response = await ReviewDao.use.getReviews(
         limit: 5,
         timeRange: '7_days',
         sentiment: apiSentiment,

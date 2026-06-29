@@ -3,3 +3,5 @@ part 'review.model.dart';
 part 'review.stats.model.dart';
 part 'sentiment.analysis.model.dart';
 part 'review.template.model.dart';
+part 'bot.model.dart';
+part 'bot.log.model.dart';

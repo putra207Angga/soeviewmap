@@ -28,7 +28,7 @@ class HomeController extends GetxController {
     isLoadingProfile.value = true;
     print('HomeController: Starting fetchUserProfile...');
     try {
-      final response = await AuthDao.getProfile();
+      final response = await AuthDao.use.getProfile();
       print(
         'HomeController: Profile loaded successfully: ${response.request!.headers}',
       );
