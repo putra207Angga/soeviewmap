@@ -23,7 +23,6 @@ class TabletHome extends GetView<HomeController> {
   }
 
   Widget _buildCollapsedSidebar(BuildContext context) {
-    final items = NavMenu.values;
     return Container(
       width: 72,
       decoration: BoxDecoration(
@@ -96,7 +95,9 @@ class TabletHome extends GetView<HomeController> {
           // Collapsed navigation items
           Expanded(
             child: Obx(
-              () => ListView.separated(
+              () {
+                final items = NavMenu.byRole(controller.userProfile.value?.role);
+                return ListView.separated(
                 itemCount: items.length,
                 separatorBuilder: (context, index) => const SizedBox(height: 8),
                 itemBuilder: (context, index) {
@@ -160,8 +161,8 @@ class TabletHome extends GetView<HomeController> {
                     ),
                   );
                 },
-              ),
-            ),
+              );
+            }),
           ),
           
           Divider(height: 1, color: Colors.grey.shade100),

@@ -13,7 +13,6 @@ class Sidebar extends GetView<HomeController> {
   final VoidCallback onLockScreenPressed;
   final VoidCallback onLogoutPressed;
   final ValueChanged<int>? onSelectedDestination;
-  static final _menuItems = NavMenu.values;
 
   @override
   Widget build(BuildContext context) {
@@ -245,7 +244,7 @@ class Sidebar extends GetView<HomeController> {
             child: Obx(
               () => ListView(
                 padding: EdgeInsets.zero,
-                children: _menuItems
+                children: NavMenu.byRole(controller.userProfile.value?.role)
                     .map(
                       (menu) => SidebarItem(
                         icon: menu.icon,

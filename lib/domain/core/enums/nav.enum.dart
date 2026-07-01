@@ -4,7 +4,8 @@ enum NavMenu {
   dashboard(icon: Icons.grid_view, label: 'Dashboard', route: Routes.dahsboard),
   templet(icon: Icons.edit_document, label: 'Template', route: Routes.template),
   review(icon: Icons.star_rounded, label: 'Review', route: Routes.review),
-  balas(icon: Icons.chat_bubble_rounded, label: 'Balas', route: Routes.balas);
+  balas(icon: Icons.chat_bubble_rounded, label: 'Balas', route: Routes.balas),
+  logBot(icon: Icons.android_rounded, label: 'Log Bot', route: Routes.logBot);
 
   final IconData icon;
   final String label;
@@ -12,4 +13,11 @@ enum NavMenu {
 
   const NavMenu({required this.icon, required this.label, required this.route});
   static List<NavMenu> get headerNav => [dashboard, templet];
+
+  static List<NavMenu> byRole(String? role) {
+    if (role?.toLowerCase() == 'pde') {
+      return NavMenu.values;
+    }
+    return NavMenu.values.where((menu) => menu != NavMenu.logBot).toList();
+  }
 }

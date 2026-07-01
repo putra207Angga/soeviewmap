@@ -19,6 +19,8 @@ class HomeScreen extends GetView<HomeController> {
             return const TemplateScreen();
           case NavMenu.balas:
             return const BalasScreen();
+          case NavMenu.logBot:
+            return const LogBotScreen();
         }
       }),
     );

@@ -8,5 +8,6 @@ class HomeControllerBinding extends Bindings {
     Get.lazyPut<ReviewController>(() => ReviewController());
     Get.lazyPut<TemplateController>(() => TemplateController());
     Get.lazyPut<BalasController>(() => BalasController());
+    Get.lazyPut<LogBotController>(() => LogBotController());
   }
 }

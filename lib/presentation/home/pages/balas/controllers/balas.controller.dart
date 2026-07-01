@@ -42,7 +42,7 @@ class BalasController extends GetxController {
     try {
       final response = await ReviewDao.use.getReviews(status: 'replied');
       if (response.statusCode == 200 && response.body != null) {
-        final List<dom.ReviewModel> apiReviews = response.body!;
+        final List<dom.ReviewModel> apiReviews = response.body!.items;
         final mapped = apiReviews.map((item) {
           return BalasLogModel(
             id: item.id.toString(),

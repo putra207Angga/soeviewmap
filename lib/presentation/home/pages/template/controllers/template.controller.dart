@@ -70,7 +70,7 @@ class TemplateController extends GetxController {
     try {
       final response = await TemplateDao.use.getTemplates();
       if (response.statusCode == 200 && response.body != null) {
-        final List<dom.ReviewTemplateModel> apiTemplates = response.body!;
+        final List<dom.ReviewTemplateModel> apiTemplates = response.body!.items;
         final map = <int, String>{};
         for (var item in apiTemplates) {
           map[item.rating] = item.templateText;

@@ -12,12 +12,15 @@ class ReviewController extends GetxController {
   // Pagination State
   final currentPage = 1.obs;
   final pageSize =
-      5.obs; // Showing 5 items per page for better pagination demonstration
+      20.obs; // Showing 5 items per page for better pagination demonstration
 
   final isLoading = false.obs;
 
   // Stats State
   final stats = Rxn<dom.ReviewStatsModel>();
+
+  // Pagination Meta State
+  final meta = Rxn<dom.MetaModel>();
 
   @override
   void onInit() {
@@ -37,6 +40,9 @@ class ReviewController extends GetxController {
     ever(selectedRating, (_) {
       fetchReviews();
       fetchStats();
+    });
+    ever(currentPage, (_) {
+      fetchReviews();
     });
   }
 
@@ -62,14 +68,14 @@ class ReviewController extends GetxController {
         apiStatus = 'replied';
       }
 
-      // 2. Map timeRange: 'Last 7 Days' -> '7_days', 'Last 30 Days' -> '30_days', 'All Time' -> 'all_time'
+      // 2. Map timeRange: 'Last 7 Days' -> '7_days', 'Last 30 Days' -> '30_days', 'All Time' -> null (omitted to fetch all-time)
       String? apiTimeRange;
       if (selectedTimeRange.value == 'Last 7 Days') {
         apiTimeRange = '7_days';
       } else if (selectedTimeRange.value == 'Last 30 Days') {
         apiTimeRange = '30_days';
       } else if (selectedTimeRange.value == 'All Time') {
-        apiTimeRange = 'all_time';
+        apiTimeRange = null;
       }
 
       // 3. Map rating: '5 Stars' -> 5, etc., 'All Ratings' -> null
@@ -83,10 +89,13 @@ class ReviewController extends GetxController {
         status: apiStatus,
         timeRange: apiTimeRange,
         rating: apiRating,
+        page: currentPage.value,
+        pageSize: pageSize.value,
       );
 
       if (response.statusCode == 200 && response.body != null) {
-        final List<dom.ReviewModel> apiReviews = response.body!;
+        meta.value = response.body!.meta;
+        final List<dom.ReviewModel> apiReviews = response.body!.items;
         final mappedReviews = apiReviews.map((item) {
           return ReviewModel(
             id: item.id.toString(),
@@ -104,7 +113,7 @@ class ReviewController extends GetxController {
         }).toList();
         reviews.assignAll(mappedReviews);
         print(
-          'ReviewController fetchReviews: reviews.length = ${reviews.length}',
+          'ReviewController fetchReviews: reviews.length = ${reviews.length}, total = ${meta.value?.totalItems}',
         );
       }
     } catch (e) {
@@ -135,27 +144,29 @@ class ReviewController extends GetxController {
   // Filtered reviews list is returned directly from the API result
   List<ReviewModel> get filteredReviews => reviews;
 
-  // Slice list for pagination
-  List<ReviewModel> get paginatedReviews {
-    final filtered = filteredReviews;
-    final start = (currentPage.value - 1) * pageSize.value;
-    if (start >= filtered.length) {
-      return [];
+  // Since server handles pagination, the list returned contains only current page reviews.
+  List<ReviewModel> get paginatedReviews => filteredReviews;
+
+  // Pagination calculations using server metadata
+  int get totalReviewsCount => meta.value?.totalItems ?? filteredReviews.length;
+  int get totalPages => meta.value?.totalPages ?? 1;
+
+  int get startEntry {
+    if (meta.value != null) {
+      final m = meta.value!;
+      return m.totalItems == 0 ? 0 : (m.currentPage - 1) * m.pageSize + 1;
     }
-    final end = start + pageSize.value;
-    return filtered.sublist(
-      start,
-      end > filtered.length ? filtered.length : end,
-    );
+    return filteredReviews.isEmpty
+        ? 0
+        : (currentPage.value - 1) * pageSize.value + 1;
   }
 
-  // Pagination calculations
-  int get totalReviewsCount => filteredReviews.length;
-  int get totalPages => (filteredReviews.length / pageSize.value).ceil();
-  int get startEntry => filteredReviews.isEmpty
-      ? 0
-      : (currentPage.value - 1) * pageSize.value + 1;
   int get endEntry {
+    if (meta.value != null) {
+      final m = meta.value!;
+      final calculated = m.currentPage * m.pageSize;
+      return calculated > m.totalItems ? m.totalItems : calculated;
+    }
     final calculated = currentPage.value * pageSize.value;
     return calculated > filteredReviews.length
         ? filteredReviews.length

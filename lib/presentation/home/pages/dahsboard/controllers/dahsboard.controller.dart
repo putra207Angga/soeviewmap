@@ -174,7 +174,7 @@ class DahsboardController extends GetxController {
         'DahsboardController fetchReviews: reviews.length = ${response.statusCode}\n${response.request?.url}',
       );
       if (response.statusCode == 200 && response.body != null) {
-        final List<dom.ReviewModel> apiReviews = response.body!;
+        final List<dom.ReviewModel> apiReviews = response.body!.items;
         final mappedReviews = apiReviews.map((item) {
           return ReviewModel(
             id: item.id.toString(),
@@ -351,11 +351,30 @@ class DahsboardController extends GetxController {
     isGeneratingReply.value = false;
   }
 
-  void submitReply(String reviewId, String reply) {
-    final idx = reviews.indexWhere((r) => r.id == reviewId);
-    if (idx != -1) {
-      reviews[idx].replyText.value = reply;
-      reviews.refresh();
+  Future<void> submitReply(String reviewId, String reply) async {
+    try {
+      final response = await ReviewDao.use.replyToReview(
+        reviewId: reviewId,
+        replyText: reply,
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final idx = reviews.indexWhere((r) => r.id == reviewId);
+        if (idx != -1) {
+          reviews[idx].replyText.value = reply;
+          reviews.refresh();
+        }
+
+        if (Get.isRegistered<ReviewController>()) {
+          final reviewCtrl = Get.find<ReviewController>();
+          final idx2 = reviewCtrl.reviews.indexWhere((r) => r.id == reviewId);
+          if (idx2 != -1) {
+            reviewCtrl.reviews[idx2].replyText.value = reply;
+            reviewCtrl.reviews.refresh();
+          }
+        }
+      }
+    } catch (e) {
+      print('DahsboardController submitReply error: $e');
     }
   }
 

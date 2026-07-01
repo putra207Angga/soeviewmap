@@ -3,12 +3,14 @@ part of 'main.daos.dart';
 class ReviewDao extends ApiService {
   static ReviewDao get use => ReviewDao();
   // Get reviews list
-  Future<Response<List<ReviewModel>>> getReviews({
+  Future<Response<ApiResponseList<ReviewModel>>> getReviews({
     String? status,
     String? timeRange,
     int? rating,
     String? sentiment,
     int? limit,
+    int? page,
+    int? pageSize,
   }) async {
     final query = <String, dynamic>{};
     if (status != null) query['status'] = status;
@@ -16,8 +18,10 @@ class ReviewDao extends ApiService {
     if (rating != null) query['rating'] = rating.toString();
     if (sentiment != null) query['sentiment'] = sentiment;
     if (limit != null) query['limit'] = limit.toString();
+    if (page != null) query['page'] = page.toString();
+    if (pageSize != null) query['page_size'] = pageSize.toString();
 
-    return await getRequest<List<ReviewModel>>(
+    return await getRequest<ApiResponseList<ReviewModel>>(
       '/api/reviews',
       query: query.isNotEmpty ? query : null,
       decoder: (data) {
@@ -32,26 +36,44 @@ class ReviewDao extends ApiService {
             print('ReviewDao.getReviews: jsonDecode error: $e');
           }
         }
+        if (decoded is Map) {
+          return ApiResponseList<ReviewModel>.fromJson(
+            Map<String, dynamic>.from(decoded),
+            (itemJson) => ReviewModel.fromJson(itemJson),
+          );
+        }
         if (decoded is List) {
-          return decoded
+          final items = decoded
               .map(
                 (e) =>
                     ReviewModel.fromJson(Map<String, dynamic>.from(e as Map)),
               )
               .toList();
+          return ApiResponseList<ReviewModel>(
+            success: true,
+            message: 'Successfully mapped raw list reviews',
+            code: 200,
+            items: items,
+            meta: MetaModel(
+              currentPage: 1,
+              pageSize: items.length,
+              totalItems: items.length,
+              totalPages: 1,
+            ),
+          );
         }
-        if (decoded is Map) {
-          final listData = decoded['data'] as List?;
-          if (listData != null) {
-            return listData
-                .map(
-                  (e) =>
-                      ReviewModel.fromJson(Map<String, dynamic>.from(e as Map)),
-                )
-                .toList();
-          }
-        }
-        return [];
+        return ApiResponseList<ReviewModel>(
+          success: false,
+          message: 'Failed to decode reviews data',
+          code: 500,
+          items: [],
+          meta: MetaModel(
+            currentPage: 1,
+            pageSize: 20,
+            totalItems: 0,
+            totalPages: 0,
+          ),
+        );
       },
     );
   }
@@ -111,6 +133,18 @@ class ReviewDao extends ApiService {
         }
         return SentimentAnalysisModel.fromJson({});
       },
+    );
+  }
+
+  // Send reply to a review (POST)
+  Future<Response<Map<String, dynamic>>> replyToReview({
+    required String reviewId,
+    required String replyText,
+  }) async {
+    final body = {'reply_text': replyText};
+    return await postRequest<Map<String, dynamic>>(
+      '/api/reviews/$reviewId/reply',
+      body,
     );
   }
 }

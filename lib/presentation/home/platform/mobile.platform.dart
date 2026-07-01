@@ -155,7 +155,6 @@ class MobileHome extends GetView<HomeController> {
   }
 
   Widget _buildGlassmorphicBottomBar(BuildContext context) {
-    final items = NavMenu.values;
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
       height: 64,
@@ -174,9 +173,11 @@ class MobileHome extends GetView<HomeController> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
         child: Obx(
-          () => Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: items.map((menu) {
+          () {
+            final items = NavMenu.byRole(controller.userProfile.value?.role);
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: items.map((menu) {
               final isSelected = controller.selectedNavIndex.value == menu;
               return GestureDetector(
                 onTap: () => controller.toNavigation(menu.index),
@@ -229,11 +230,12 @@ class MobileHome extends GetView<HomeController> {
                 ),
               );
             }).toList(),
-          ),
-        ),
+          );
+        },
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildNotificationItem({
     required String title,

@@ -12,7 +12,15 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Colors.white,
       foregroundColor: Theme.of(context).cardColor,
       title: Autocomplete<NavMenu>(
-        optionsBuilder: (text) => NavMenu.values,
+        optionsBuilder: (text) {
+          final items = NavMenu.byRole(controller.userProfile.value?.role);
+          if (text.text.isEmpty) {
+            return items;
+          }
+          return items.where((option) {
+            return option.label.toLowerCase().contains(text.text.toLowerCase());
+          });
+        },
         displayStringForOption: (option) => option.label,
         onSelected: (value) => controller.toNavigation(value.index),
         optionsViewBuilder: (context, onSelected, options) => Material(

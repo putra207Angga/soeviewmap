@@ -3,8 +3,8 @@ part of 'main.daos.dart';
 class TemplateDao extends ApiService {
   static TemplateDao get use => TemplateDao();
   // Get review templates
-  Future<Response<List<ReviewTemplateModel>>> getTemplates() async {
-    return await getRequest<List<ReviewTemplateModel>>(
+  Future<Response<ApiResponseList<ReviewTemplateModel>>> getTemplates() async {
+    return await getRequest<ApiResponseList<ReviewTemplateModel>>(
       '/api/reviews/templates',
       decoder: (data) {
         print(
@@ -18,28 +18,45 @@ class TemplateDao extends ApiService {
             print('TemplateDao.getTemplates: jsonDecode error: $e');
           }
         }
+        if (decoded is Map) {
+          return ApiResponseList<ReviewTemplateModel>.fromJson(
+            Map<String, dynamic>.from(decoded),
+            (itemJson) => ReviewTemplateModel.fromJson(itemJson),
+          );
+        }
         if (decoded is List) {
-          return decoded
+          final items = decoded
               .map(
                 (e) => ReviewTemplateModel.fromJson(
                   Map<String, dynamic>.from(e as Map),
                 ),
               )
               .toList();
+          return ApiResponseList<ReviewTemplateModel>(
+            success: true,
+            message: 'Successfully mapped raw list templates',
+            code: 200,
+            items: items,
+            meta: MetaModel(
+              currentPage: 1,
+              pageSize: items.length,
+              totalItems: items.length,
+              totalPages: 1,
+            ),
+          );
         }
-        if (decoded is Map) {
-          final listData = decoded['data'] as List?;
-          if (listData != null) {
-            return listData
-                .map(
-                  (e) => ReviewTemplateModel.fromJson(
-                    Map<String, dynamic>.from(e as Map),
-                  ),
-                )
-                .toList();
-          }
-        }
-        return [];
+        return ApiResponseList<ReviewTemplateModel>(
+          success: false,
+          message: 'Failed to decode templates data',
+          code: 500,
+          items: [],
+          meta: MetaModel(
+            currentPage: 1,
+            pageSize: 20,
+            totalItems: 0,
+            totalPages: 0,
+          ),
+        );
       },
     );
   }
@@ -62,11 +79,9 @@ class TemplateDao extends ApiService {
     required String templateText,
   }) async {
     final body = {'template_text': templateText};
-    final query = {'rating': rating.toString()};
     return await putRequest<Map<String, dynamic>>(
-      '/api/reviews/templates',
+      '/api/reviews/templates/$rating',
       body,
-      query: query,
     );
   }
 
@@ -74,10 +89,8 @@ class TemplateDao extends ApiService {
   Future<Response<Map<String, dynamic>>> deleteTemplate({
     required int rating,
   }) async {
-    final query = {'rating': rating.toString()};
     return await deleteRequest<Map<String, dynamic>>(
-      '/api/reviews/templates',
-      query: query,
+      '/api/reviews/templates/$rating',
     );
   }
 }
