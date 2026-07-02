@@ -16,15 +16,15 @@ class AuthDao extends ApiService {
     return await getRequest<UserProfile>(
       '/api/me',
       decoder: (data) {
-        print(
-          'AuthDao: getProfile decoder received data of type ${data.runtimeType}: $data',
-        );
+        // print(
+        //   'AuthDao: getProfile decoder received data of type ${data.runtimeType}: $data',
+        // );
         dynamic decoded = data;
         if (data is String) {
           try {
             decoded = jsonDecode(data);
           } catch (e) {
-            print('AuthDao: getProfile jsonDecode error: $e');
+            // print('AuthDao: getProfile jsonDecode error: $e');
           }
         }
         if (decoded is Map) {

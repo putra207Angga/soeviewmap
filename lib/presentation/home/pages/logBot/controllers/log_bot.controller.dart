@@ -5,7 +5,7 @@ import 'package:soeviewmap/infrastructure/main.infrastructures.dart';
 class LogBotController extends GetxController {
   final botStatus = Rxn<dom.BotModel>();
   final logs = <dom.BotLogModel>[].obs;
-  final isLoading = false.obs;
+  final isLoading = true.obs;
 
   // Search & Filter State
   final selectedLevel = 'All'.obs; // 'All', 'INFO', 'SUCCESS', 'WARNING', 'ERROR'

@@ -9,8 +9,11 @@ class AuthentifikasiScreen extends GetView<AuthentifikasiController> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC), // Modern off-white slate base
+      backgroundColor: isDark
+          ? const Color(0xFF0D0E12)
+          : const Color(0xFFF8FAFC), // Modern off-white slate base
       body: Stack(
         children: [
           // Ambient Glow Element 1 (Top-Right Bloom)

@@ -25,15 +25,15 @@ class ReviewDao extends ApiService {
       '/api/reviews',
       query: query.isNotEmpty ? query : null,
       decoder: (data) {
-        print(
-          'ReviewDao.getReviews: decoder received data of type ${data.runtimeType}: $data',
-        );
+        // print(
+        //   'ReviewDao.getReviews: decoder received data of type ${data.runtimeType}: $data',
+        // );
         dynamic decoded = data;
         if (data is String) {
           try {
             decoded = jsonDecode(data);
           } catch (e) {
-            print('ReviewDao.getReviews: jsonDecode error: $e');
+            // print('ReviewDao.getReviews: jsonDecode error: $e');
           }
         }
         if (decoded is Map) {
@@ -83,15 +83,15 @@ class ReviewDao extends ApiService {
     return await getRequest<ReviewStatsModel>(
       '/api/reviews/stats',
       decoder: (data) {
-        print(
-          'ReviewDao.getStats: decoder received data of type ${data.runtimeType}: $data',
-        );
+        // print(
+        //   'ReviewDao.getStats: decoder received data of type ${data.runtimeType}: $data',
+        // );
         dynamic decoded = data;
         if (data is String) {
           try {
             decoded = jsonDecode(data);
           } catch (e) {
-            print('ReviewDao.getStats: jsonDecode error: $e');
+            // print('ReviewDao.getStats: jsonDecode error: $e');
           }
         }
         if (decoded is Map) {
@@ -112,15 +112,15 @@ class ReviewDao extends ApiService {
     return await getRequest<SentimentAnalysisModel>(
       '/api/reviews/sentiment-analysis',
       decoder: (data) {
-        print(
-          'ReviewDao.getSentimentAnalysis: decoder received data of type ${data.runtimeType}: $data',
-        );
+        // print(
+        //   'ReviewDao.getSentimentAnalysis: decoder received data of type ${data.runtimeType}: $data',
+        // );
         dynamic decoded = data;
         if (data is String) {
           try {
             decoded = jsonDecode(data);
           } catch (e) {
-            print('ReviewDao.getSentimentAnalysis: jsonDecode error: $e');
+            // print('ReviewDao.getSentimentAnalysis: jsonDecode error: $e');
           }
         }
         if (decoded is Map) {

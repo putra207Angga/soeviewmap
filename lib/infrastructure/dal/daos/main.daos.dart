@@ -7,3 +7,4 @@ part 'bot.daos.dart';
 part 'auth.dao.dart';
 part 'review.dao.dart';
 part 'template.dao.dart';
+part 'notification.dao.dart';

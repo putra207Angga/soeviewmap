@@ -7,15 +7,15 @@ class TemplateDao extends ApiService {
     return await getRequest<ApiResponseList<ReviewTemplateModel>>(
       '/api/reviews/templates',
       decoder: (data) {
-        print(
-          'TemplateDao.getTemplates: decoder received data of type ${data.runtimeType}: $data',
-        );
+        // print(
+        //   'TemplateDao.getTemplates: decoder received data of type ${data.runtimeType}: $data',
+        // );
         dynamic decoded = data;
         if (data is String) {
           try {
             decoded = jsonDecode(data);
           } catch (e) {
-            print('TemplateDao.getTemplates: jsonDecode error: $e');
+            // print('TemplateDao.getTemplates: jsonDecode error: $e');
           }
         }
         if (decoded is Map) {

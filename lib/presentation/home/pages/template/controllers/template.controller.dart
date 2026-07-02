@@ -43,7 +43,7 @@ class TemplateController extends GetxController {
   // Custom templates configuration (by Location / Keyword)
   final customTemplates = <CustomTemplate>[].obs;
 
-  final isLoading = false.obs;
+  final isLoading = true.obs;
 
   @override
   void onInit() {

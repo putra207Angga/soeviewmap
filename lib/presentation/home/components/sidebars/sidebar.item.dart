@@ -16,6 +16,9 @@ class SidebarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
       child: Material(
@@ -23,7 +26,7 @@ class SidebarItem extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(12),
-          hoverColor: Colors.grey.shade50,
+          hoverColor: isDark ? Colors.white10 : Colors.grey.shade50,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -83,7 +86,9 @@ class SidebarItem extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: selected ? FontWeight.bold : FontWeight.w600,
-                      color: selected ? const Color(0xFF1E293B) : Colors.grey.shade600,
+                      color: selected
+                          ? (isDark ? Colors.white : const Color(0xFF1E293B))
+                          : (isDark ? Colors.grey.shade400 : Colors.grey.shade600),
                       letterSpacing: -0.15,
                     ),
                   ),

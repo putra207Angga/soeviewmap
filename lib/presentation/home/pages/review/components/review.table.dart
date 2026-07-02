@@ -210,16 +210,19 @@ class ReviewTableComponent extends GetView<ReviewController> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(right: 16),
-              child: Text(
-                item.comment,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: isDark ? Colors.grey.shade300 : Colors.grey.shade800,
-                  height: 1.3,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
+              child: Obx(() {
+                final controller = Get.find<HomeController>();
+                return Text(
+                  controller.censorText(item.comment),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isDark ? Colors.grey.shade300 : Colors.grey.shade800,
+                    height: 1.3,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                );
+              }),
             ),
           ),
 
@@ -252,7 +255,7 @@ class ReviewTableComponent extends GetView<ReviewController> {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.primary,
+                        color: isDark ? const Color(0xFF818CF8) : theme.colorScheme.primary,
                       ),
                     ),
                   );
@@ -600,13 +603,16 @@ class ReviewTableComponent extends GetView<ReviewController> {
                           ],
                         ),
                         const SizedBox(height: 6),
-                        Text(
-                          '"${item.comment}"',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
+                        Obx(() {
+                          final controller = Get.find<HomeController>();
+                          return Text(
+                            '"${controller.censorText(item.comment)}"',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          );
+                        }),
                       ],
                     ),
                   ),

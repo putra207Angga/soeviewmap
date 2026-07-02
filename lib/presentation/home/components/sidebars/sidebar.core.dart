@@ -16,11 +16,16 @@ class Sidebar extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: 240, // Increased slightly for breathing room
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(right: BorderSide(color: Colors.grey.shade100)),
+        color: isDark ? const Color(0xFF13151A) : Colors.white,
+        border: Border(
+          right: BorderSide(
+            color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade100,
+          ),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -45,7 +50,7 @@ class Sidebar extends GetView<HomeController> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Column(
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -54,7 +59,7 @@ class Sidebar extends GetView<HomeController> {
                         fontWeight: FontWeight.w900,
                         fontSize: 14,
                         letterSpacing: 0.5,
-                        color: Color(0xFF1E293B),
+                        color: isDark ? Colors.white : const Color(0xFF1E293B),
                       ),
                     ),
                     Text(
@@ -106,9 +111,11 @@ class Sidebar extends GetView<HomeController> {
               return Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
+                  color: isDark ? const Color(0xFF1E222B) : Colors.grey.shade50,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.shade100),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade100,
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -159,10 +166,10 @@ class Sidebar extends GetView<HomeController> {
                             name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
-                              color: Color(0xFF1E293B),
+                              color: isDark ? Colors.white : const Color(0xFF1E293B),
                             ),
                           ),
                           Text(
@@ -260,7 +267,10 @@ class Sidebar extends GetView<HomeController> {
             ),
           ),
 
-          Divider(height: 1, color: Colors.grey.shade100),
+          Divider(
+            height: 1,
+            color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade100,
+          ),
           const SizedBox(height: 8),
 
           // Bottom Utilities
@@ -268,12 +278,14 @@ class Sidebar extends GetView<HomeController> {
             icon: Icons.lock_outline_rounded,
             label: 'Lock Screen',
             onTap: onLockScreenPressed,
+            context: context,
           ),
           _buildUtilityItem(
             icon: Icons.logout_rounded,
             label: 'Logout',
             onTap: onLogoutPressed,
             isDestructive: true,
+            context: context,
           ),
           const SizedBox(height: 16),
         ],
@@ -285,8 +297,10 @@ class Sidebar extends GetView<HomeController> {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    required BuildContext context,
     bool isDestructive = false,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       child: Material(
@@ -296,7 +310,7 @@ class Sidebar extends GetView<HomeController> {
           borderRadius: BorderRadius.circular(10),
           hoverColor: isDestructive
               ? Colors.red.shade50.withOpacity(0.4)
-              : Colors.grey.shade50,
+              : (isDark ? Colors.white10 : Colors.grey.shade50),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
@@ -316,7 +330,7 @@ class Sidebar extends GetView<HomeController> {
                     fontWeight: FontWeight.w600,
                     color: isDestructive
                         ? Colors.redAccent.shade200
-                        : Colors.grey.shade600,
+                        : (isDark ? Colors.grey.shade400 : Colors.grey.shade600),
                     letterSpacing: -0.15,
                   ),
                 ),

@@ -28,11 +28,28 @@ class Main extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = SecureStorageServices.to.readBool('settings_dark_mode', defaultValue: false);
     return GetMaterialApp(
       builder: (context, child) =>
           Material(child: EnvironmentsBadge(child: child ?? SizedBox.shrink())),
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.light,
+      themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+      theme: ThemeData(
+        brightness: Brightness.light,
+        primaryColor: const Color(0xFF6366F1),
+        colorScheme: const ColorScheme.light(
+          primary: Color(0xFF6366F1),
+          secondary: Color(0xFF8B5CF6),
+        ),
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        primaryColor: const Color(0xFF818CF8),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF818CF8),
+          secondary: Color(0xFF9F7AEA),
+        ),
+      ),
       initialRoute: initialRoute,
       getPages: Nav.routes,
     );

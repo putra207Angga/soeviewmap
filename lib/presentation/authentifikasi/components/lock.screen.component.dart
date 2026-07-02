@@ -7,6 +7,7 @@ class LockScreenComponent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -65,7 +66,7 @@ class LockScreenComponent extends StatelessWidget {
                   color: const Color(0xFF10B981), // Emerald green
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: Colors.white,
+                    color: isDark ? const Color(0xFF0D0E12) : Colors.white,
                     width: 2.0,
                   ),
                   boxShadow: [
@@ -83,12 +84,12 @@ class LockScreenComponent extends StatelessWidget {
         const SizedBox(height: 12),
         
         // User Identity
-        const Text(
+        Text(
           'Super Admin',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF1E293B),
+            color: isDark ? Colors.white : const Color(0xFF1E293B),
           ),
         ),
         const SizedBox(height: 4),
@@ -119,17 +120,17 @@ class LockScreenComponent extends StatelessWidget {
         // Lock Card
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isDark ? const Color(0xFF13151A) : Colors.white,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
             ],
             border: Border.all(
-              color: Colors.grey.shade100,
+              color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade100,
               width: 1.5,
             ),
           ),
@@ -139,12 +140,12 @@ class LockScreenComponent extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'System Locked',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1E293B),
+                    color: isDark ? Colors.white : const Color(0xFF1E293B),
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -175,9 +176,9 @@ class LockScreenComponent extends StatelessWidget {
                         () => TextFormField(
                           controller: controller.lockPasswordController,
                           obscureText: controller.obscureLockPassword.value,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14,
-                            color: Color(0xFF1E293B),
+                            color: isDark ? Colors.white : const Color(0xFF1E293B),
                           ),
                           decoration: InputDecoration(
                             prefixIcon: const Icon(
@@ -201,18 +202,24 @@ class LockScreenComponent extends StatelessWidget {
                               fontSize: 14,
                             ),
                             filled: true,
-                            fillColor: Colors.white,
+                            fillColor: isDark ? const Color(0xFF1E222B) : Colors.white,
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16,
                               vertical: 16,
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
+                              borderSide: BorderSide(
+                                color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
+                                width: 1.5,
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
+                              borderSide: BorderSide(
+                                color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
+                                width: 1.5,
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -302,21 +309,21 @@ class LockScreenComponent extends StatelessWidget {
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
                       Icons.logout_rounded,
                       size: 16,
-                      color: Color(0xFF0D47A1),
+                      color: isDark ? const Color(0xFF818CF8) : const Color(0xFF0D47A1),
                     ),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Text(
                       'Sign in as different user',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF0D47A1),
+                        color: isDark ? const Color(0xFF818CF8) : const Color(0xFF0D47A1),
                       ),
                     ),
                   ],

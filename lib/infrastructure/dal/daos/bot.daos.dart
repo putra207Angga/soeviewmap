@@ -7,15 +7,15 @@ class BotDao extends ApiService {
     return await getRequest<BotModel>(
       '/api/reviews/bot/status', // Ganti dengan endpoint yang sesuai jika berbeda
       decoder: (data) {
-        print(
-          'BotDao.getStatus: decoder received data of type ${data.runtimeType}: $data',
-        );
+        // print(
+        //   'BotDao.getStatus: decoder received data of type ${data.runtimeType}: $data',
+        // );
         dynamic decoded = data;
         if (data is String) {
           try {
             decoded = jsonDecode(data);
           } catch (e) {
-            print('BotDao.getStatus: jsonDecode error: $e');
+            // print('BotDao.getStatus: jsonDecode error: $e');
           }
         }
         if (decoded is Map) {
@@ -36,15 +36,15 @@ class BotDao extends ApiService {
       '/api/reviews/bot/logs',
       query: {'limit': limit.toString()},
       decoder: (data) {
-        print(
-          'BotDao.getLogs: decoder received data of type ${data.runtimeType}: $data',
-        );
+        // print(
+        //   'BotDao.getLogs: decoder received data of type ${data.runtimeType}: $data',
+        // );
         dynamic decoded = data;
         if (data is String) {
           try {
             decoded = jsonDecode(data);
           } catch (e) {
-            print('BotDao.getLogs: jsonDecode error: $e');
+            // print('BotDao.getLogs: jsonDecode error: $e');
           }
         }
         if (decoded is Map) {

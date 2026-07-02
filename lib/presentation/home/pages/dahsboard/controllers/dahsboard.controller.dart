@@ -61,50 +61,15 @@ class DahsboardController extends GetxController {
   // Locations coordinates map (aligned with actual buildings on the geographical static map of RSUD dr. Soebandi)
   final locations = <MapLocationModel>[
     const MapLocationModel(
-      name: 'IGD (Instalasi Gawat Darurat)',
-      dx: 0.53,
-      dy: 0.46,
-      dominantSentiment: 'positive',
-      reviewCount: 24,
-    ),
-    const MapLocationModel(
-      name: 'Farmasi / Apotek',
-      dx: 0.56,
-      dy: 0.54,
-      dominantSentiment: 'negative',
-      reviewCount: 42,
-    ),
-    const MapLocationModel(
-      name: 'Poliklinik Spesialis',
-      dx: 0.59,
-      dy: 0.58,
-      dominantSentiment: 'positive',
-      reviewCount: 35,
-    ),
-    const MapLocationModel(
-      name: 'Rawat Inap Dahlia',
+      name: 'RSUD dr. Soebandi',
       dx: 0.55,
-      dy: 0.66,
+      dy: 0.55,
       dominantSentiment: 'positive',
-      reviewCount: 18,
-    ),
-    const MapLocationModel(
-      name: 'Parkiran & Kantin',
-      dx: 0.48,
-      dy: 0.72,
-      dominantSentiment: 'neutral',
-      reviewCount: 15,
-    ),
-    const MapLocationModel(
-      name: 'Kasir & Pendaftaran',
-      dx: 0.54,
-      dy: 0.50,
-      dominantSentiment: 'negative',
-      reviewCount: 29,
+      reviewCount: 161,
     ),
   ];
 
-  final isLoading = false.obs;
+  final isLoading = true.obs;
   final stats = Rxn<ReviewStatsModel>();
   final sentimentAnalysis = Rxn<dom.SentimentAnalysisModel>();
 
@@ -184,7 +149,7 @@ class DahsboardController extends GetxController {
             rating: item.rating.toDouble(),
             comment: item.comment,
             date: _formatDateTime(item.createdAt),
-            locationName: selectedLocation.value ?? 'Poliklinik Spesialis',
+            locationName: selectedLocation.value ?? 'RSUD dr. Soebandi',
             sentiment: item.sentiment.toLowerCase(),
             tags: item.keywords.map((k) => '#$k').toList(),
             initialReply: item.replyText,

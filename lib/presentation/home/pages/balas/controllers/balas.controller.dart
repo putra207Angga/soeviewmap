@@ -26,7 +26,7 @@ class BalasLogModel {
 class BalasController extends GetxController {
   final selectedMonth = 'Oktober 2023'.obs;
   final isExporting = false.obs;
-  final isLoading = false.obs;
+  final isLoading = true.obs;
 
   // Reactive list of reply logs
   final replyLogs = <BalasLogModel>[].obs;

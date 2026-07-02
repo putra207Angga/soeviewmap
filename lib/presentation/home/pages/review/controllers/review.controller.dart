@@ -14,7 +14,7 @@ class ReviewController extends GetxController {
   final pageSize =
       20.obs; // Showing 5 items per page for better pagination demonstration
 
-  final isLoading = false.obs;
+  final isLoading = true.obs;
 
   // Stats State
   final stats = Rxn<dom.ReviewStatsModel>();
@@ -105,7 +105,7 @@ class ReviewController extends GetxController {
             rating: item.rating.toDouble(),
             comment: item.comment,
             date: _formatDateTime(item.createdAt),
-            locationName: 'Poliklinik Spesialis',
+            locationName: 'RSUD dr. Soebandi',
             sentiment: item.sentiment.toLowerCase(),
             tags: item.keywords.map((k) => '#$k').toList(),
             initialReply: item.replyText,
