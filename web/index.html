@@ -31,16 +31,29 @@
 
   <title>soeviewmap</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- Google Fonts for premium typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="loading.css">
 </head>
 <body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
+  <!-- Custom Premium Loading Screen -->
+  <div id="loading-container">
+    <div class="loader-content">
+      <div class="spinner-container">
+        <div class="glow-ring"></div>
+        <div class="core-dot"></div>
+      </div>
+      <h1 class="loading-title">soeviewmap</h1>
+      <p class="loading-subtitle" id="status-message">initializing digital realm...</p>
+    </div>
+  </div>
 
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
   <script src="flutter_bootstrap.js" async></script>
+
+  <script src="loading.js" defer></script>
 </body>
 </html>

@@ -1,8 +1,7 @@
-// Run with: dart tool/verify_decryption.dart
+// Run with: dart tool/verify.decryption.dart
 // ignore_for_file: avoid_print
 import 'dart:io';
-import 'package:soeviewmap/domain/main.domains.dart';
-import 'package:soeviewmap/infrastructure/main.infrastructures.dart';
+import 'package:encrypt/encrypt.dart';
 
 Map<String, String> loadEnv() {
   final env = <String, String>{};
@@ -38,24 +37,48 @@ void main() {
     return;
   }
 
-  // Populate ConfigEnvironments variables like the app does at startup
-  ConfigEnvironments.urlDecryptionKey = urlKey;
-  ConfigEnvironments.urlDecryptionIv = urlIv;
+  final key = Key.fromUtf8(urlKey);
+  final iv = IV.fromUtf8(urlIv);
+  final encrypter = Encrypter(AES(key, mode: AESMode.cbc));
+
+  final enumFile = File('lib/domain/core/enums/environments.enum.dart');
+  if (!enumFile.existsSync()) {
+    print('❌ Error: lib/domain/core/enums/environments.enum.dart not found');
+    return;
+  }
+
+  final content = enumFile.readAsStringSync();
+  final regExp = RegExp(r"(\w+)\s*\([\s\S]*?encryptedUrl:\s*'([^']*)'");
+  final matches = regExp.allMatches(content);
+
+  if (matches.isEmpty) {
+    print('❌ Warning: No environments with encryptedUrl found in environments.enum.dart');
+    return;
+  }
 
   print('=== Verifying URL Decryption ===');
-  for (var envType in Environments.values) {
-    final decryptedUrl = envType.url;
-    print('${envType.label.toUpperCase()}:');
-    print('  Encrypted: ${envType.encryptedUrl}');
-    print('  Decrypted: $decryptedUrl');
+  for (final match in matches) {
+    final envName = match.group(1)!;
+    final encryptedUrl = match.group(2)!;
 
-    if (envType == Environments.local) {
-      const expected = 'http://pdesoebandi.id/informasi/';
-      if (decryptedUrl == expected) {
-        print('  ✅ LOCAL URL decryption verified successfully!');
-      } else {
-        print('  ❌ LOCAL URL decryption failed! Expected: $expected');
+    print('${envName.toUpperCase()}:');
+    print('  Encrypted: $encryptedUrl');
+
+    try {
+      final decrypted = encrypter.decrypt64(encryptedUrl, iv: iv);
+      final decryptedUrl = decrypted == 'EMPTY' ? '' : decrypted;
+      print('  Decrypted: $decryptedUrl');
+
+      if (envName == 'local') {
+        const expected = 'http://soeket.pdesoebandi.id';
+        if (decryptedUrl == expected) {
+          print('  ✅ LOCAL URL decryption verified successfully!');
+        } else {
+          print('  ❌ LOCAL URL decryption failed! Expected: $expected');
+        }
       }
+    } catch (e) {
+      print('  ❌ Decryption failed: $e');
     }
   }
 }

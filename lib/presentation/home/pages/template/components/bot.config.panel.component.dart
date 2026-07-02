@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable
+
 part of 'main.components.dart';
 
 class BotConfigPanel extends GetView<TemplateController> {
@@ -98,7 +100,7 @@ class BotConfigPanel extends GetView<TemplateController> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'WEBHOOK URL',
+                      'Message',
                       style: TextStyle(
                         fontSize: 9,
                         fontWeight: FontWeight.bold,
@@ -107,13 +109,15 @@ class BotConfigPanel extends GetView<TemplateController> {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Obx(() => _buildCopyableField(
-                          context,
-                          text: controller.webhookUrl.value,
-                          isDark: isDark,
-                          theme: theme,
-                          label: 'Webhook URL',
-                        )),
+                    Obx(
+                      () => _buildCopyableField(
+                        context,
+                        text: controller.webhookUrl.value,
+                        isDark: isDark,
+                        theme: theme,
+                        label: 'Message',
+                      ),
+                    ),
                   ],
                 );
 
@@ -121,7 +125,7 @@ class BotConfigPanel extends GetView<TemplateController> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'SECRET TOKEN',
+                      'Time Last Checked',
                       style: TextStyle(
                         fontSize: 9,
                         fontWeight: FontWeight.bold,
@@ -130,14 +134,16 @@ class BotConfigPanel extends GetView<TemplateController> {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Obx(() => _buildCopyableField(
-                          context,
-                          text: controller.secretToken.value,
-                          isDark: isDark,
-                          theme: theme,
-                          label: 'Secret Token',
-                          obscure: true,
-                        )),
+                    Obx(
+                      () => _buildCopyableField(
+                        context,
+                        text: controller.secretToken.value,
+                        isDark: isDark,
+                        theme: theme,
+                        label: 'Time Last Checked',
+                        obscure: true,
+                      ),
+                    ),
                   ],
                 );
 
@@ -168,6 +174,7 @@ class BotConfigPanel extends GetView<TemplateController> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildCopyableField(
     BuildContext context, {
     required String text,
@@ -183,9 +190,7 @@ class BotConfigPanel extends GetView<TemplateController> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: isDark
-            ? Colors.black.withOpacity(0.2)
-            : Colors.grey.shade100,
+        color: isDark ? Colors.black.withOpacity(0.2) : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
@@ -219,7 +224,9 @@ class BotConfigPanel extends GetView<TemplateController> {
                     : Colors.white.withOpacity(0.95),
                 colorText: isDark ? Colors.white : Colors.black,
                 borderWidth: 1,
-                borderColor: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
+                borderColor: isDark
+                    ? const Color(0xFF2E3440)
+                    : Colors.grey.shade200,
                 duration: const Duration(seconds: 2),
               );
             },
@@ -255,7 +262,10 @@ class _StatusIndicatorDotState extends State<_StatusIndicatorDot>
       vsync: this,
       duration: const Duration(seconds: 1),
     )..repeat(reverse: true);
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.6).animate(_animController);
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.6,
+    ).animate(_animController);
   }
 
   @override
@@ -266,7 +276,9 @@ class _StatusIndicatorDotState extends State<_StatusIndicatorDot>
 
   @override
   Widget build(BuildContext context) {
-    final baseColor = widget.isActive ? const Color(0xFF10B981) : Colors.grey.shade400;
+    final baseColor = widget.isActive
+        ? const Color(0xFF10B981)
+        : Colors.grey.shade400;
 
     return ScaleTransition(
       scale: _scaleAnimation,

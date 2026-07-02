@@ -12,6 +12,8 @@ analyzer:
     deprecated_member_use: ignore
     unnecessary_overrides: ignore
     curly_braces_in_flow_control_structures: ignore
+    avoid_print: ignore
+    depend_on_referenced_packages: ignore
 include: package:flutter_lints/flutter.yaml
 
 linter:

@@ -52,14 +52,22 @@ class VibeMeterComponent extends GetView<DahsboardController> {
   Widget _buildVibeHeader(ThemeData theme) {
     return Obx(() {
       final percentage = controller.positivePercentage;
-      String title = 'Mid Vibe 😐';
+      
       Color color = const Color(0xFFF59E0B);
       if (percentage >= 80) {
-        title = 'Passed Vibe Check! ✨🚀';
         color = const Color(0xFF10B981);
       } else if (percentage < 50) {
-        title = 'Bad Vibe Warning! 🚨😭';
         color = const Color(0xFFF43F5E);
+      }
+
+      // Prioritize the summary status from backend sentiment analysis response
+      String title = controller.sentimentAnalysis.value?.summaryStatus ?? 'Mid Vibe 😐';
+      if (controller.sentimentAnalysis.value == null) {
+        if (percentage >= 80) {
+          title = 'Passed Vibe Check! ✨🚀';
+        } else if (percentage < 50) {
+          title = 'Bad Vibe Warning! 🚨😭';
+        }
       }
 
       return Row(
@@ -115,6 +123,34 @@ class VibeMeterComponent extends GetView<DahsboardController> {
 
   Widget _buildSentimentProgressBars() {
     return Obx(() {
+      final analysis = controller.sentimentAnalysis.value;
+      if (analysis != null) {
+        return Column(
+          children: [
+            _buildProgressBarRow(
+              'Positif (Vibe Aman)',
+              analysis.positive.count,
+              analysis.positive.percentage / 100,
+              const Color(0xFF10B981),
+            ),
+            const SizedBox(height: 6),
+            _buildProgressBarRow(
+              'Netral (Biasa Aja)',
+              analysis.neutral.count,
+              analysis.neutral.percentage / 100,
+              const Color(0xFFF59E0B),
+            ),
+            const SizedBox(height: 6),
+            _buildProgressBarRow(
+              'Negatif (Komplain)',
+              analysis.negative.count,
+              analysis.negative.percentage / 100,
+              const Color(0xFFF43F5E),
+            ),
+          ],
+        );
+      }
+
       final total = controller.reviews.length;
       if (total == 0) return const SizedBox.shrink();
 
@@ -133,21 +169,21 @@ class VibeMeterComponent extends GetView<DahsboardController> {
           _buildProgressBarRow(
             'Positif (Vibe Aman)',
             pos,
-            total,
+            total > 0 ? pos / total : 0.0,
             const Color(0xFF10B981),
           ),
           const SizedBox(height: 6),
           _buildProgressBarRow(
             'Netral (Biasa Aja)',
             neu,
-            total,
+            total > 0 ? neu / total : 0.0,
             const Color(0xFFF59E0B),
           ),
           const SizedBox(height: 6),
           _buildProgressBarRow(
             'Negatif (Komplain)',
             neg,
-            total,
+            total > 0 ? neg / total : 0.0,
             const Color(0xFFF43F5E),
           ),
         ],
@@ -155,8 +191,7 @@ class VibeMeterComponent extends GetView<DahsboardController> {
     });
   }
 
-  Widget _buildProgressBarRow(String label, int count, int total, Color color) {
-    final pct = total > 0 ? count / total : 0.0;
+  Widget _buildProgressBarRow(String label, int count, double pct, Color color) {
     return Column(
       children: [
         Row(
@@ -192,7 +227,87 @@ class VibeMeterComponent extends GetView<DahsboardController> {
 
   Widget _buildTrendingTagsCloud() {
     return Obx(() {
-      // Gather all tags from reviews and count frequencies
+      final analysis = controller.sentimentAnalysis.value;
+      if (analysis != null && analysis.topKeywords.isNotEmpty) {
+        return Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: analysis.topKeywords.map((entry) {
+            final tag = entry.keyword;
+            final count = entry.count;
+
+            Color tagColor;
+            if (tag.contains('slow') ||
+                tag.contains('unfriendly') ||
+                tag.contains('L_')) {
+              tagColor = const Color(0xFFF43F5E); // Negative red
+            } else if (tag.contains('mid') || tag.contains('hot')) {
+              tagColor = const Color(0xFFF59E0B); // Neutral amber
+            } else {
+              tagColor = const Color(0xFF10B981); // Positive green
+            }
+
+            return InkWell(
+              onTap: () {
+                Get.snackbar(
+                  'Hashtag Filter',
+                  'Tag $tag muncul di $count ulasan.',
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: tagColor.withOpacity(0.85),
+                  colorText: Colors.white,
+                  duration: const Duration(seconds: 2),
+                );
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: tagColor.withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: tagColor.withOpacity(0.25),
+                    width: 0.8,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      tag,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: tagColor,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 1,
+                      ),
+                      decoration: BoxDecoration(
+                        color: tagColor.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        '$count',
+                        style: TextStyle(
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                          color: tagColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        );
+      }
+
+      // Fallback: Gather all tags from local reviews and count frequencies
       final tagFreq = <String, int>{};
       for (final r in controller.reviews) {
         for (final tag in r.tags) {
@@ -223,7 +338,6 @@ class VibeMeterComponent extends GetView<DahsboardController> {
 
           return InkWell(
             onTap: () {
-              // Clicking tag shows a snackbar or filters
               Get.snackbar(
                 'Hashtag Filter',
                 'Tag $tag muncul di $count ulasan.',

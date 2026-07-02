@@ -7,6 +7,7 @@ class LoginFormComponent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -19,25 +20,25 @@ class LoginFormComponent extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDark ? const Color(0xFF1E222B) : Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.indigo.withOpacity(0.08),
+                    color: Colors.indigo.withOpacity(isDark ? 0.2 : 0.08),
                     blurRadius: 12,
                     offset: const Offset(0, 3),
                   ),
                 ],
                 border: Border.all(
-                  color: Colors.indigo.shade50,
+                  color: isDark ? const Color(0xFF2E3440) : Colors.indigo.shade50,
                   width: 1.2,
                 ),
               ),
-              child: const Center(
+              child: Center(
                 child: Icon(
                   Icons.domain_verification_rounded,
                   size: 24,
-                  color: Color(0xFF0D47A1), // Deep Blue Logo
+                  color: isDark ? const Color(0xFF818CF8) : const Color(0xFF0D47A1), // Deep Blue Logo
                 ),
               ),
             ),
@@ -46,12 +47,12 @@ class LoginFormComponent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
+                Text(
                   'RSD Soebandi',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF0D47A1),
+                    color: isDark ? Colors.white : const Color(0xFF0D47A1),
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -74,22 +75,22 @@ class LoginFormComponent extends StatelessWidget {
         // Login Form Card
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isDark ? const Color(0xFF13151A) : Colors.white,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
               BoxShadow(
-                color: Colors.indigo.withOpacity(0.02),
+                color: Colors.indigo.withOpacity(isDark ? 0.05 : 0.02),
                 blurRadius: 32,
                 spreadRadius: 2,
               ),
             ],
             border: Border.all(
-              color: Colors.grey.shade100,
+              color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade100,
               width: 1.5,
             ),
           ),
@@ -100,12 +101,12 @@ class LoginFormComponent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header Card
-                const Text(
+                Text(
                   'Administrasi Sign In',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1E293B),
+                    color: isDark ? Colors.white : const Color(0xFF1E293B),
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -132,9 +133,9 @@ class LoginFormComponent extends StatelessWidget {
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: controller.usernameController,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
-                          color: Color(0xFF1E293B),
+                          color: isDark ? Colors.white : const Color(0xFF1E293B),
                         ),
                         decoration: InputDecoration(
                           prefixIcon: const Icon(
@@ -148,22 +149,31 @@ class LoginFormComponent extends StatelessWidget {
                             fontSize: 14,
                           ),
                           filled: true,
-                          fillColor: Colors.white,
+                          fillColor: isDark ? const Color(0xFF1E222B) : Colors.white,
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 16,
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
+                            borderSide: BorderSide(
+                              color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
+                              width: 1.5,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
+                            borderSide: BorderSide(
+                              color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
+                              width: 1.5,
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF0D47A1), width: 2.0),
+                            borderSide: BorderSide(
+                              color: isDark ? const Color(0xFF818CF8) : const Color(0xFF0D47A1),
+                              width: 2.0,
+                            ),
                           ),
                           errorStyle: const TextStyle(fontSize: 11),
                         ),
@@ -202,12 +212,12 @@ class LoginFormComponent extends StatelessWidget {
                                 borderRadius: 12,
                               );
                             },
-                            child: const Text(
+                            child: Text(
                               'Forgot password?',
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF0D47A1),
+                                color: isDark ? const Color(0xFF818CF8) : const Color(0xFF0D47A1),
                               ),
                             ),
                           ),
@@ -246,22 +256,31 @@ class LoginFormComponent extends StatelessWidget {
                               fontSize: 14,
                             ),
                             filled: true,
-                            fillColor: Colors.white,
+                            fillColor: isDark ? const Color(0xFF1E222B) : Colors.white,
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16,
                               vertical: 16,
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
+                              borderSide: BorderSide(
+                                color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
+                                width: 1.5,
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
+                              borderSide: BorderSide(
+                                color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
+                                width: 1.5,
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFF0D47A1), width: 2.0),
+                              borderSide: BorderSide(
+                                color: isDark ? const Color(0xFF818CF8) : const Color(0xFF0D47A1),
+                                width: 2.0,
+                              ),
                             ),
                             errorStyle: const TextStyle(fontSize: 11),
                           ),
@@ -293,7 +312,7 @@ class LoginFormComponent extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 side: BorderSide(
-                                  color: Colors.grey.shade300,
+                                  color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade300,
                                   width: 1.5,
                                 ),
                               ),
@@ -402,11 +421,11 @@ class LoginFormComponent extends StatelessWidget {
                     borderRadius: 12,
                   );
                 },
-                child: const Text(
+                child: Text(
                   'Hospital IT Support',
                   style: TextStyle(
                     fontSize: 11,
-                    color: Color(0xFF0D47A1),
+                    color: isDark ? const Color(0xFF818CF8) : const Color(0xFF0D47A1),
                     fontWeight: FontWeight.w600,
                     decoration: TextDecoration.underline,
                   ),

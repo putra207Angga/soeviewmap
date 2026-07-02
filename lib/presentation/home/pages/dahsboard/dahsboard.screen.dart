@@ -155,10 +155,10 @@ class DahsboardScreen extends GetView<DahsboardController> {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: isDark ? const Color(0xFF1E222B) : Colors.white,
-              foregroundColor: theme.colorScheme.primary,
+              backgroundColor: isDark ? const Color(0xFF2E3440) : Colors.white,
+              foregroundColor: isDark ? Colors.white : theme.colorScheme.primary,
               side: BorderSide(
-                color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade300,
+                color: isDark ? const Color(0xFF3E4450) : Colors.grey.shade300,
                 width: 1.2,
               ),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

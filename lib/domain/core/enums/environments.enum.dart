@@ -23,7 +23,7 @@ enum Environments {
     label: 'local',
     icon: Icons.computer_rounded,
     color: Color(0xFFF59E0B),
-    encryptedUrl: '+u5805CqkX3bb7Q3qbdh+AkzUvc7dxEF6Xa2OsaTAmrpJSkNYM2BXYVzUb3Ze7jF',
+    encryptedUrl: '+CTlaDYzXo9HJ6JbmY3MqRJbIJJTNgfNvGLoabesGLo=',
   );
 
   final String label;
@@ -49,7 +49,9 @@ enum Environments {
     try {
       final key = encrypt.Key.fromUtf8(keyStr);
       final iv = encrypt.IV.fromUtf8(ivStr);
-      final encrypter = encrypt.Encrypter(encrypt.AES(key, mode: encrypt.AESMode.cbc));
+      final encrypter = encrypt.Encrypter(
+        encrypt.AES(key, mode: encrypt.AESMode.cbc),
+      );
       final decrypted = encrypter.decrypt64(encryptedUrl, iv: iv);
       return decrypted == 'EMPTY' ? '' : decrypted;
     } catch (e) {

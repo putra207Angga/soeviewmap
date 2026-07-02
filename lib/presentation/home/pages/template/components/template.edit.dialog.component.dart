@@ -36,7 +36,11 @@ class _TemplateEditDialogState extends State<TemplateEditDialog> {
     final selection = _textController.selection;
 
     if (selection.start >= 0 && selection.end >= 0) {
-      final newText = text.replaceRange(selection.start, selection.end, placeholder);
+      final newText = text.replaceRange(
+        selection.start,
+        selection.end,
+        placeholder,
+      );
       _textController.text = newText;
       _textController.selection = TextSelection.collapsed(
         offset: selection.start + placeholder.length,
@@ -50,11 +54,8 @@ class _TemplateEditDialogState extends State<TemplateEditDialog> {
   String _getFormattedPreview() {
     final rawText = _textController.text;
     if (rawText.isEmpty) return 'Tulis sesuatu untuk melihat pratinjau...';
-    
-    return rawText
-        .replaceAll('{reviewerName}', 'Agus Santoso')
-        .replaceAll('{locationName}', 'Poliklinik Spesialis')
-        .replaceAll('{rating}', widget.rating.toString());
+
+    return rawText.replaceAll('{nama}', 'Agus Santoso');
   }
 
   @override
@@ -84,258 +85,267 @@ class _TemplateEditDialogState extends State<TemplateEditDialog> {
               ),
             ],
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      RatingStars(rating: widget.rating.toDouble(), size: 14),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Edit Template Bintang ${widget.rating}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  IconButton(
-                    onPressed: () => Get.back(),
-                    icon: const Icon(Icons.close_rounded, size: 18),
-                    constraints: const BoxConstraints(),
-                    padding: EdgeInsets.zero,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              Divider(
-                height: 1,
-                color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
-              ),
-              const SizedBox(height: 14),
-
-              // Placeholder buttons label
-              Text(
-                'SISIPKAN VARIABEL OTOMATIS (BOT)',
-                style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade500,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const SizedBox(height: 8),
-              // Variable inserter chips row
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _buildVariableChip(
-                    label: '{reviewerName}',
-                    description: 'Nama Reviewer',
-                    onTap: () => _insertPlaceholder('{reviewerName}'),
-                    theme: theme,
-                    isDark: isDark,
-                  ),
-                  _buildVariableChip(
-                    label: '{locationName}',
-                    description: 'Lokasi RS',
-                    onTap: () => _insertPlaceholder('{locationName}'),
-                    theme: theme,
-                    isDark: isDark,
-                  ),
-                  _buildVariableChip(
-                    label: '{rating}',
-                    description: 'Bintang',
-                    onTap: () => _insertPlaceholder('{rating}'),
-                    theme: theme,
-                    isDark: isDark,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-
-              // Text editor label & field
-              Text(
-                'TEMPLATE PESAN',
-                style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade500,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _textController,
-                maxLines: 4,
-                onChanged: (_) => setState(() {}),
-                maxLength: 400,
-                style: const TextStyle(fontSize: 12, height: 1.4),
-                decoration: InputDecoration(
-                  hintText: 'Tulis template balasan bot di sini...',
-                  hintStyle: const TextStyle(fontSize: 12),
-                  filled: true,
-                  fillColor: isDark ? Colors.black.withOpacity(0.15) : Colors.grey.shade50,
-                  contentPadding: const EdgeInsets.all(12),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(
-                      color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
-                      width: 0.8,
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(
-                      color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
-                      width: 0.8,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(
-                      color: theme.colorScheme.primary,
-                      width: 1.2,
-                    ),
-                  ),
-                  counterText: '', // Hide default counter to render our custom character budget
-                ),
-              ),
-              const SizedBox(height: 6),
-              Align(
-                alignment: Alignment.centerRight,
-                child: Text(
-                  '${_textController.text.length} / 400 karakter',
-                  style: TextStyle(
-                    fontSize: 9,
-                    color: _textController.text.length > 350
-                        ? Colors.redAccent
-                        : Colors.grey.shade500,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-
-              // Live Preview Block
-              Text(
-                'PRATINJAU REAL-TIME (SIMULASI BALASAN)',
-                style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade500,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withOpacity(0.04),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: theme.colorScheme.primary.withOpacity(0.15),
-                    width: 0.8,
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
                       children: [
-                        Icon(
-                          Icons.smart_toy_rounded,
-                          size: 13,
-                          color: theme.colorScheme.primary,
-                        ),
-                        const SizedBox(width: 4),
+                        RatingStars(rating: widget.rating.toDouble(), size: 14),
+                        const SizedBox(width: 8),
                         Text(
-                          'Simulasi Respon Bot',
-                          style: TextStyle(
-                            fontSize: 9.5,
+                          'Edit Template Bintang ${widget.rating}',
+                          style: const TextStyle(
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.primary,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      _getFormattedPreview(),
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontStyle: FontStyle.italic,
-                        color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
-                        height: 1.4,
+                    IconButton(
+                      onPressed: () => Get.back(),
+                      icon: const Icon(Icons.close_rounded, size: 18),
+                      constraints: const BoxConstraints(),
+                      padding: EdgeInsets.zero,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Divider(
+                  height: 1,
+                  color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
+                ),
+                const SizedBox(height: 14),
+
+                // Placeholder buttons label
+                Text(
+                  'SISIPKAN VARIABEL OTOMATIS (BOT)',
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade500,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Variable inserter chips row
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _buildVariableChip(
+                      label: '{nama}',
+                      description: 'Nama Reviewer',
+                      onTap: () => _insertPlaceholder('{nama}'),
+                      theme: theme,
+                      isDark: isDark,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+
+                // Text editor label & field
+                Text(
+                  'TEMPLATE PESAN',
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade500,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _textController,
+                  maxLines: 4,
+                  onChanged: (_) => setState(() {}),
+                  maxLength: 400,
+                  style: const TextStyle(fontSize: 12, height: 1.4),
+                  decoration: InputDecoration(
+                    hintText: 'Tulis template balasan bot di sini...',
+                    hintStyle: const TextStyle(fontSize: 12),
+                    filled: true,
+                    fillColor: isDark
+                        ? Colors.black.withOpacity(0.15)
+                        : Colors.grey.shade50,
+                    contentPadding: const EdgeInsets.all(12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                        color: isDark
+                            ? const Color(0xFF2E3440)
+                            : Colors.grey.shade200,
+                        width: 0.8,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                        color: isDark
+                            ? const Color(0xFF2E3440)
+                            : Colors.grey.shade200,
+                        width: 0.8,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                        color: theme.colorScheme.primary,
+                        width: 1.2,
+                      ),
+                    ),
+                    counterText:
+                        '', // Hide default counter to render our custom character budget
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    '${_textController.text.length} / 400 karakter',
+                    style: TextStyle(
+                      fontSize: 9,
+                      color: _textController.text.length > 350
+                          ? Colors.redAccent
+                          : Colors.grey.shade500,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // Live Preview Block
+                Text(
+                  'PRATINJAU REAL-TIME (SIMULASI BALASAN)',
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade500,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withOpacity(0.04),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: theme.colorScheme.primary.withOpacity(0.15),
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.smart_toy_rounded,
+                            size: 13,
+                            color: theme.colorScheme.primary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Simulasi Respon Bot',
+                            style: TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        _getFormattedPreview(),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontStyle: FontStyle.italic,
+                          color: isDark
+                              ? Colors.grey.shade300
+                              : Colors.grey.shade700,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Action buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Get.back(),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                      ),
+                      child: Text(
+                        'Batal',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: () {
+                        widget.controller.updateTemplate(
+                          widget.rating,
+                          _textController.text,
+                        );
+                        Get.back();
+                        Get.snackbar(
+                          'Template Diperbarui',
+                          'Template bintang ${widget.rating} berhasil disimpan dan disinkronkan ke bot.',
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: isDark
+                              ? const Color(0xFF1E222B)
+                              : Colors.white.withOpacity(0.95),
+                          colorText: isDark ? Colors.white : Colors.black,
+                          borderWidth: 1,
+                          borderColor: isDark
+                              ? const Color(0xFF2E3440)
+                              : Colors.grey.shade200,
+                          duration: const Duration(seconds: 3),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.colorScheme.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'Simpan Template',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 20),
-
-              // Action buttons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Get.back(),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    ),
-                    child: Text(
-                      'Batal',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade500,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  ElevatedButton(
-                    onPressed: () {
-                      widget.controller.updateTemplate(widget.rating, _textController.text);
-                      Get.back();
-                      Get.snackbar(
-                        'Template Diperbarui',
-                        'Template bintang ${widget.rating} berhasil disimpan dan disinkronkan ke bot.',
-                        snackPosition: SnackPosition.BOTTOM,
-                        backgroundColor: isDark
-                            ? const Color(0xFF1E222B)
-                            : Colors.white.withOpacity(0.95),
-                        colorText: isDark ? Colors.white : Colors.black,
-                        borderWidth: 1,
-                        borderColor: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
-                        duration: const Duration(seconds: 3),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.colorScheme.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      'Simpan Template',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -400,7 +410,8 @@ class CustomTemplateEditDialog extends StatefulWidget {
   });
 
   @override
-  State<CustomTemplateEditDialog> createState() => _CustomTemplateEditDialogState();
+  State<CustomTemplateEditDialog> createState() =>
+      _CustomTemplateEditDialogState();
 }
 
 class _CustomTemplateEditDialogState extends State<CustomTemplateEditDialog> {
@@ -412,9 +423,15 @@ class _CustomTemplateEditDialogState extends State<CustomTemplateEditDialog> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.initialTemplate?.name ?? '');
-    _triggerValueController = TextEditingController(text: widget.initialTemplate?.triggerValue ?? '');
-    _textController = TextEditingController(text: widget.initialTemplate?.templateText ?? '');
+    _nameController = TextEditingController(
+      text: widget.initialTemplate?.name ?? '',
+    );
+    _triggerValueController = TextEditingController(
+      text: widget.initialTemplate?.triggerValue ?? '',
+    );
+    _textController = TextEditingController(
+      text: widget.initialTemplate?.templateText ?? '',
+    );
     _triggerType = widget.initialTemplate?.triggerType ?? 'Lokasi';
   }
 
@@ -431,7 +448,11 @@ class _CustomTemplateEditDialogState extends State<CustomTemplateEditDialog> {
     final selection = _textController.selection;
 
     if (selection.start >= 0 && selection.end >= 0) {
-      final newText = text.replaceRange(selection.start, selection.end, placeholder);
+      final newText = text.replaceRange(
+        selection.start,
+        selection.end,
+        placeholder,
+      );
       _textController.text = newText;
       _textController.selection = TextSelection.collapsed(
         offset: selection.start + placeholder.length,
@@ -445,14 +466,12 @@ class _CustomTemplateEditDialogState extends State<CustomTemplateEditDialog> {
   String _getFormattedPreview() {
     final rawText = _textController.text;
     if (rawText.isEmpty) return 'Tulis sesuatu untuk melihat pratinjau...';
-    
-    final sampleTrigger = _triggerValueController.text.trim().isNotEmpty
-        ? _triggerValueController.text.trim()
-        : (_triggerType == 'Lokasi' ? 'Poliklinik Kebidanan' : 'antri');
 
-    return rawText
-        .replaceAll('{reviewerName}', 'Agus Santoso')
-        .replaceAll('{locationName}', sampleTrigger);
+    // final sampleTrigger = _triggerValueController.text.trim().isNotEmpty
+    //     ? _triggerValueController.text.trim()
+    //     : (_triggerType == 'Lokasi' ? 'Poliklinik Kebidanan' : 'antri');
+
+    return rawText.replaceAll('{nama}', 'Agus Santoso');
   }
 
   @override
@@ -493,7 +512,9 @@ class _CustomTemplateEditDialogState extends State<CustomTemplateEditDialog> {
                     Row(
                       children: [
                         Icon(
-                          widget.initialTemplate == null ? Icons.add_circle_outline : Icons.edit_note,
+                          widget.initialTemplate == null
+                              ? Icons.add_circle_outline
+                              : Icons.edit_note,
                           color: theme.colorScheme.primary,
                         ),
                         const SizedBox(width: 8),
@@ -519,7 +540,9 @@ class _CustomTemplateEditDialogState extends State<CustomTemplateEditDialog> {
                 const SizedBox(height: 14),
                 Divider(
                   height: 1,
-                  color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
+                  color: isDark
+                      ? const Color(0xFF2E3440)
+                      : Colors.grey.shade200,
                 ),
                 const SizedBox(height: 14),
 
@@ -540,19 +563,28 @@ class _CustomTemplateEditDialogState extends State<CustomTemplateEditDialog> {
                     hintText: 'Contoh: Balasan untuk Poli Anak...',
                     hintStyle: const TextStyle(fontSize: 12),
                     filled: true,
-                    fillColor: isDark ? Colors.black.withOpacity(0.15) : Colors.grey.shade50,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    fillColor: isDark
+                        ? Colors.black.withOpacity(0.15)
+                        : Colors.grey.shade50,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide(
-                        color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
+                        color: isDark
+                            ? const Color(0xFF2E3440)
+                            : Colors.grey.shade200,
                         width: 0.8,
                       ),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide(
-                        color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
+                        color: isDark
+                            ? const Color(0xFF2E3440)
+                            : Colors.grey.shade200,
                         width: 0.8,
                       ),
                     ),
@@ -587,7 +619,9 @@ class _CustomTemplateEditDialogState extends State<CustomTemplateEditDialog> {
                           decoration: BoxDecoration(
                             color: _triggerType == 'Lokasi'
                                 ? theme.colorScheme.primary.withOpacity(0.1)
-                                : (isDark ? Colors.black.withOpacity(0.1) : Colors.grey.shade100),
+                                : (isDark
+                                      ? Colors.black.withOpacity(0.1)
+                                      : Colors.grey.shade100),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
                               color: _triggerType == 'Lokasi'
@@ -626,13 +660,16 @@ class _CustomTemplateEditDialogState extends State<CustomTemplateEditDialog> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: GestureDetector(
-                        onTap: () => setState(() => _triggerType = 'Kata Kunci'),
+                        onTap: () =>
+                            setState(() => _triggerType = 'Kata Kunci'),
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           decoration: BoxDecoration(
                             color: _triggerType == 'Kata Kunci'
                                 ? theme.colorScheme.primary.withOpacity(0.1)
-                                : (isDark ? Colors.black.withOpacity(0.1) : Colors.grey.shade100),
+                                : (isDark
+                                      ? Colors.black.withOpacity(0.1)
+                                      : Colors.grey.shade100),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
                               color: _triggerType == 'Kata Kunci'
@@ -673,7 +710,9 @@ class _CustomTemplateEditDialogState extends State<CustomTemplateEditDialog> {
                 const SizedBox(height: 14),
 
                 Text(
-                  _triggerType == 'Lokasi' ? 'NAMA DEPARTEMEN / LOKASI RSUD' : 'KATA KUNCI PEMICU',
+                  _triggerType == 'Lokasi'
+                      ? 'NAMA DEPARTEMEN / LOKASI RSUD'
+                      : 'KATA KUNCI PEMICU',
                   style: TextStyle(
                     fontSize: 9,
                     fontWeight: FontWeight.bold,
@@ -691,19 +730,28 @@ class _CustomTemplateEditDialogState extends State<CustomTemplateEditDialog> {
                         : 'Contoh: antri, lambat, ramah',
                     hintStyle: const TextStyle(fontSize: 12),
                     filled: true,
-                    fillColor: isDark ? Colors.black.withOpacity(0.15) : Colors.grey.shade50,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    fillColor: isDark
+                        ? Colors.black.withOpacity(0.15)
+                        : Colors.grey.shade50,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide(
-                        color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
+                        color: isDark
+                            ? const Color(0xFF2E3440)
+                            : Colors.grey.shade200,
                         width: 0.8,
                       ),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide(
-                        color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
+                        color: isDark
+                            ? const Color(0xFF2E3440)
+                            : Colors.grey.shade200,
                         width: 0.8,
                       ),
                     ),
@@ -733,16 +781,9 @@ class _CustomTemplateEditDialogState extends State<CustomTemplateEditDialog> {
                   runSpacing: 8,
                   children: [
                     _buildVariableChip(
-                      label: '{reviewerName}',
+                      label: '{nama}',
                       description: 'Nama Reviewer',
-                      onTap: () => _insertPlaceholder('{reviewerName}'),
-                      theme: theme,
-                      isDark: isDark,
-                    ),
-                    _buildVariableChip(
-                      label: '{locationName}',
-                      description: 'Lokasi RS',
-                      onTap: () => _insertPlaceholder('{locationName}'),
+                      onTap: () => _insertPlaceholder('{nama}'),
                       theme: theme,
                       isDark: isDark,
                     ),
@@ -770,19 +811,25 @@ class _CustomTemplateEditDialogState extends State<CustomTemplateEditDialog> {
                     hintText: 'Tulis template balasan bot kustom Anda...',
                     hintStyle: const TextStyle(fontSize: 12),
                     filled: true,
-                    fillColor: isDark ? Colors.black.withOpacity(0.15) : Colors.grey.shade50,
+                    fillColor: isDark
+                        ? Colors.black.withOpacity(0.15)
+                        : Colors.grey.shade50,
                     contentPadding: const EdgeInsets.all(12),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide(
-                        color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
+                        color: isDark
+                            ? const Color(0xFF2E3440)
+                            : Colors.grey.shade200,
                         width: 0.8,
                       ),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide(
-                        color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
+                        color: isDark
+                            ? const Color(0xFF2E3440)
+                            : Colors.grey.shade200,
                         width: 0.8,
                       ),
                     ),
@@ -803,7 +850,9 @@ class _CustomTemplateEditDialogState extends State<CustomTemplateEditDialog> {
                     '${_textController.text.length} / 400 karakter',
                     style: TextStyle(
                       fontSize: 9,
-                      color: _textController.text.length > 350 ? Colors.redAccent : Colors.grey.shade500,
+                      color: _textController.text.length > 350
+                          ? Colors.redAccent
+                          : Colors.grey.shade500,
                     ),
                   ),
                 ),
@@ -824,14 +873,20 @@ class _CustomTemplateEditDialogState extends State<CustomTemplateEditDialog> {
                   decoration: BoxDecoration(
                     color: theme.colorScheme.primary.withOpacity(0.04),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: theme.colorScheme.primary.withOpacity(0.15)),
+                    border: Border.all(
+                      color: theme.colorScheme.primary.withOpacity(0.15),
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.smart_toy_rounded, size: 13, color: theme.colorScheme.primary),
+                          Icon(
+                            Icons.smart_toy_rounded,
+                            size: 13,
+                            color: theme.colorScheme.primary,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             'Simulasi Respon Bot Kustom',
@@ -849,7 +904,9 @@ class _CustomTemplateEditDialogState extends State<CustomTemplateEditDialog> {
                         style: TextStyle(
                           fontSize: 11,
                           fontStyle: FontStyle.italic,
-                          color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                          color: isDark
+                              ? Colors.grey.shade300
+                              : Colors.grey.shade700,
                           height: 1.4,
                         ),
                       ),
@@ -865,7 +922,11 @@ class _CustomTemplateEditDialogState extends State<CustomTemplateEditDialog> {
                       onPressed: () => Get.back(),
                       child: Text(
                         'Batal',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey.shade500),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade500,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -898,7 +959,9 @@ class _CustomTemplateEditDialogState extends State<CustomTemplateEditDialog> {
                             'Template Ditambahkan',
                             'Template kustom baru berhasil dibuat.',
                             snackPosition: SnackPosition.BOTTOM,
-                            backgroundColor: isDark ? const Color(0xFF1E222B) : Colors.white.withOpacity(0.95),
+                            backgroundColor: isDark
+                                ? const Color(0xFF1E222B)
+                                : Colors.white.withOpacity(0.95),
                             colorText: isDark ? Colors.white : Colors.black,
                           );
                         } else {
@@ -914,7 +977,9 @@ class _CustomTemplateEditDialogState extends State<CustomTemplateEditDialog> {
                             'Template Diperbarui',
                             'Perubahan template kustom berhasil disimpan.',
                             snackPosition: SnackPosition.BOTTOM,
-                            backgroundColor: isDark ? const Color(0xFF1E222B) : Colors.white.withOpacity(0.95),
+                            backgroundColor: isDark
+                                ? const Color(0xFF1E222B)
+                                : Colors.white.withOpacity(0.95),
                             colorText: isDark ? Colors.white : Colors.black,
                           );
                         }
@@ -922,12 +987,22 @@ class _CustomTemplateEditDialogState extends State<CustomTemplateEditDialog> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: theme.colorScheme.primary,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                       child: Text(
-                        widget.initialTemplate == null ? 'Buat Template' : 'Simpan Perubahan',
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        widget.initialTemplate == null
+                            ? 'Buat Template'
+                            : 'Simpan Perubahan',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],

@@ -1,4 +1,4 @@
-part of 'main.services.dart';
+part of 'main.services.dart'; // Load decryption keys from secure storage
 
 class ConfigEnvironments extends GetxService {
   static ConfigEnvironments get to => Get.find<ConfigEnvironments>();
@@ -11,4 +11,10 @@ class ConfigEnvironments extends GetxService {
 
   set setEnvironments(Environments environments) =>
       _currentEnvironments.value = environments;
+
+  /// Initialise decryption keys from secure storage or .env
+  Future<void> initialize() async {
+    // Ensure SecureStorage loads the .env and sets the keys
+    await SecureStorageServices.to.init();
+  }
 }

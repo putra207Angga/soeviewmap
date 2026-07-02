@@ -1,6 +1,6 @@
 part of 'main.components.dart';
 
-class BalasDetailsDialog extends StatefulWidget {
+class BalasDetailsDialog extends StatelessWidget {
   final BalasLogModel logItem;
   final BalasController controller;
 
@@ -9,29 +9,6 @@ class BalasDetailsDialog extends StatefulWidget {
     required this.logItem,
     required this.controller,
   });
-
-  @override
-  State<BalasDetailsDialog> createState() => _BalasDetailsDialogState();
-}
-
-// Placeholder to avoid conflict
-
-class _BalasDetailsDialogState extends State<BalasDetailsDialog> {
-  late TextEditingController _textController;
-
-  @override
-  void initState() {
-    super.initState();
-    _textController = TextEditingController(
-      text: widget.logItem.adminReply.value,
-    );
-  }
-
-  @override
-  void dispose() {
-    _textController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +73,7 @@ class _BalasDetailsDialogState extends State<BalasDetailsDialog> {
                       0.12,
                     ),
                     child: Text(
-                      widget.logItem.reviewerName[0],
+                      logItem.reviewerName.isNotEmpty ? logItem.reviewerName[0] : 'U',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
@@ -106,14 +83,14 @@ class _BalasDetailsDialogState extends State<BalasDetailsDialog> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    widget.logItem.reviewerName,
+                    logItem.reviewerName,
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const Spacer(),
-                  RatingStars(rating: widget.logItem.rating, size: 11),
+                  RatingStars(rating: logItem.rating, size: 11),
                 ],
               ),
               const SizedBox(height: 8),
@@ -132,7 +109,7 @@ class _BalasDetailsDialogState extends State<BalasDetailsDialog> {
                   ),
                 ),
                 child: Text(
-                  '"${widget.logItem.reviewText}"',
+                  logItem.reviewText.isEmpty ? '-' : '"${logItem.reviewText}"',
                   style: TextStyle(
                     fontSize: 11,
                     fontStyle: FontStyle.italic,
@@ -143,7 +120,7 @@ class _BalasDetailsDialogState extends State<BalasDetailsDialog> {
               ),
               const SizedBox(height: 14),
 
-              // 2. Admin Response Field
+              // 2. Admin Response View
               Text(
                 'TANGGAPAN ADMIN / BOT',
                 style: TextStyle(
@@ -154,101 +131,57 @@ class _BalasDetailsDialogState extends State<BalasDetailsDialog> {
                 ),
               ),
               const SizedBox(height: 8),
-              TextField(
-                controller: _textController,
-                maxLines: 3,
-                style: const TextStyle(fontSize: 11, height: 1.4),
-                decoration: InputDecoration(
-                  hintText: 'Tulis tanggapan atau edit balasan bot di sini...',
-                  hintStyle: const TextStyle(fontSize: 11),
-                  filled: true,
-                  fillColor: isDark
-                      ? Colors.black.withOpacity(0.1)
-                      : Colors.white,
-                  contentPadding: const EdgeInsets.all(12),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(
-                      color: isDark
-                          ? const Color(0xFF2E3440)
-                          : Colors.grey.shade200,
-                      width: 0.8,
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(
-                      color: isDark
-                          ? const Color(0xFF2E3440)
-                          : Colors.grey.shade200,
-                      width: 0.8,
-                    ),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? theme.colorScheme.primary.withOpacity(0.08)
+                      : theme.colorScheme.primary.withOpacity(0.04),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: theme.colorScheme.primary.withOpacity(0.2),
+                    width: 0.8,
                   ),
                 ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.reply_all_rounded,
+                      size: 16,
+                      color: theme.colorScheme.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Obx(() {
+                        final reply = logItem.adminReply.value;
+                        return Text(
+                          reply.isEmpty ? 'Belum ada tanggapan' : reply,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isDark ? Colors.grey.shade300 : Colors.grey.shade800,
+                            height: 1.4,
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
-              // 3. Actions Row (Cancel, Delete Reply, Save)
+              // 3. Actions Row (Only Close button)
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  if (widget.logItem.adminReply.value.isNotEmpty)
-                    TextButton.icon(
-                      onPressed: () {
-                        widget.controller.deleteReply(widget.logItem.id);
-                        Get.back();
-                        Get.snackbar(
-                          'Balasan Dihapus',
-                          'Tanggapan admin untuk ${widget.logItem.reviewerName} telah dihapus.',
-                          snackPosition: SnackPosition.BOTTOM,
-                        );
-                      },
-                      icon: const Icon(
-                        Icons.delete_outline_rounded,
-                        size: 14,
-                        color: Colors.redAccent,
-                      ),
-                      label: const Text(
-                        'Hapus Balasan',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.redAccent,
-                        ),
-                      ),
-                    ),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () => Get.back(),
-                    child: Text(
-                      'Batal',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade500,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
                   ElevatedButton(
-                    onPressed: () {
-                      widget.controller.updateAdminReply(
-                        widget.logItem.id,
-                        _textController.text,
-                      );
-                      Get.back();
-                      Get.snackbar(
-                        'Balasan Disimpan',
-                        'Tanggapan untuk ${widget.logItem.reviewerName} berhasil diperbarui.',
-                        snackPosition: SnackPosition.BOTTOM,
-                      );
-                    },
+                    onPressed: () => Get.back(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: theme.colorScheme.primary,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
+                        horizontal: 20,
+                        vertical: 12,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -256,7 +189,7 @@ class _BalasDetailsDialogState extends State<BalasDetailsDialog> {
                       elevation: 0,
                     ),
                     child: const Text(
-                      'Simpan',
+                      'Tutup',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,

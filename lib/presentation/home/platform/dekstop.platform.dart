@@ -14,8 +14,13 @@ class DesktopHome extends GetView<HomeController> {
               // 1. Switch active screen to Template tab
               controller.toNavigation(NavMenu.templet.index);
               
-              // 2. Open create dialog
+              // 2. Register TemplateController if not already registered
+              if (!Get.isRegistered<TemplateController>()) {
+                TemplateControllerBinding().dependencies();
+              }
               final templateCtrl = Get.find<TemplateController>();
+              
+              // 3. Open create dialog
               showDialog(
                 context: context,
                 barrierDismissible: true,

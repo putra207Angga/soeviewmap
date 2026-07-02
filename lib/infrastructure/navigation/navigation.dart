@@ -28,6 +28,11 @@ class Nav {
           page: () => const BalasScreen(),
           binding: BalasControllerBinding(),
         ),
+        GetPage(
+          name: Routes.logBot,
+          page: () => const LogBotScreen(),
+          binding: LogBotControllerBinding(),
+        ),
       ],
     ),
     GetPage(

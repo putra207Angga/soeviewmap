@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:soeviewmap/domain/main.domains.dart' as dom;
+import 'package:soeviewmap/domain/main.domains.dart';
+import 'package:soeviewmap/infrastructure/main.infrastructures.dart';
 
 import '../components/main.components.dart';
 import 'dahsboard/components/main.components.dart';

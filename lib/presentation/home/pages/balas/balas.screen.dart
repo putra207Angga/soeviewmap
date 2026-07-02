@@ -42,30 +42,52 @@ class BalasScreen extends GetView<BalasController> {
                     ],
                   ),
                 ),
-                OutlinedButton.icon(
-                  onPressed: () {
-                    Get.snackbar(
-                      'Reply Tracking Active',
-                      'Bot auto-reply tracking is running and auditing response logs.',
-                      snackPosition: SnackPosition.BOTTOM,
-                    );
-                  },
-                  icon: const Icon(Icons.analytics_outlined, size: 13),
-                  label: const Text(
-                    'Reply Tracking',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: theme.colorScheme.primary,
-                    side: BorderSide(
-                      color: theme.colorScheme.primary.withOpacity(0.4),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: () => controller.fetchReplyLogs(),
+                      icon: const Icon(Icons.refresh_rounded, size: 16),
+                      tooltip: 'Segarkan data',
+                      style: IconButton.styleFrom(
+                        foregroundColor: theme.colorScheme.primary,
+                        backgroundColor: theme.colorScheme.primary.withOpacity(0.04),
+                        padding: const EdgeInsets.all(8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: BorderSide(
+                            color: theme.colorScheme.primary.withOpacity(0.4),
+                          ),
+                        ),
+                      ),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                    const SizedBox(width: 8),
+                    OutlinedButton.icon(
+                      onPressed: () {
+                        Get.snackbar(
+                          'Reply Tracking Active',
+                          'Bot auto-reply tracking is running and auditing response logs.',
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                      },
+                      icon: const Icon(Icons.analytics_outlined, size: 13),
+                      label: const Text(
+                        'Reply Tracking',
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: theme.colorScheme.primary,
+                        side: BorderSide(
+                          color: theme.colorScheme.primary.withOpacity(0.4),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        backgroundColor: theme.colorScheme.primary.withOpacity(0.04),
+                      ),
                     ),
-                    backgroundColor: theme.colorScheme.primary.withOpacity(0.04),
-                  ),
+                  ],
                 ),
               ],
             );

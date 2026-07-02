@@ -1,4 +1,5 @@
 export 'package:soeviewmap/infrastructure/navigation/bindings/controllers/authentifikasi.controller.binding.dart'; 
+export 'package:soeviewmap/infrastructure/navigation/bindings/controllers/log_bot.controller.binding.dart'; 
 import 'package:get/get.dart';
 import 'package:soeviewmap/presentation/screens.dart';
 part 'balas.controller.binding.dart';

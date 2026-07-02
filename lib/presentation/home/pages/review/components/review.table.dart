@@ -35,6 +35,9 @@ class ReviewTableComponent extends GetView<ReviewController> {
                     // Table Rows
                     Expanded(
                       child: Obx(() {
+                        if (controller.isLoading.value) {
+                          return _buildLoadingState(isDark);
+                        }
                         final items = controller.paginatedReviews;
                         if (items.isEmpty) {
                           return _buildEmptyState(isDark);
@@ -207,16 +210,19 @@ class ReviewTableComponent extends GetView<ReviewController> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(right: 16),
-              child: Text(
-                item.comment,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: isDark ? Colors.grey.shade300 : Colors.grey.shade800,
-                  height: 1.3,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
+              child: Obx(() {
+                final controller = Get.find<HomeController>();
+                return Text(
+                  controller.censorText(item.comment),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isDark ? Colors.grey.shade300 : Colors.grey.shade800,
+                    height: 1.3,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                );
+              }),
             ),
           ),
 
@@ -249,7 +255,7 @@ class ReviewTableComponent extends GetView<ReviewController> {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.primary,
+                        color: isDark ? const Color(0xFF818CF8) : theme.colorScheme.primary,
                       ),
                     ),
                   );
@@ -286,32 +292,56 @@ class ReviewTableComponent extends GetView<ReviewController> {
   }
 
   Widget _buildEmptyState(bool isDark) {
-    return Expanded(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.search_off_rounded,
-              size: 48,
-              color: Colors.grey.shade500,
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.search_off_rounded,
+            size: 48,
+            color: Colors.grey.shade500,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Tidak ada ulasan ditemukan',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
             ),
-            const SizedBox(height: 12),
-            Text(
-              'Tidak ada ulasan ditemukan',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
-              ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Ganti filter Anda untuk mencari yang lain.',
+            style: TextStyle(fontSize: 11, color: Colors.grey),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingState(bool isDark) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(
+            width: 32,
+            height: 32,
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
             ),
-            const SizedBox(height: 4),
-            const Text(
-              'Ganti filter Anda untuk mencari yang lain.',
-              style: TextStyle(fontSize: 11, color: Colors.grey),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Memuat data ulasan...',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -323,6 +353,50 @@ class ReviewTableComponent extends GetView<ReviewController> {
       final end = controller.endEntry;
       final current = controller.currentPage.value;
       final pages = controller.totalPages;
+
+      // Dynamic page button ranges windowing algorithm
+      final List<Widget> pageButtons = [];
+      const int maxButtons = 5;
+
+      if (pages <= maxButtons) {
+        for (int i = 1; i <= pages; i++) {
+          pageButtons.add(_buildPageNumberButton(i, current, theme, isDark));
+        }
+      } else {
+        // Always show the first page
+        pageButtons.add(_buildPageNumberButton(1, current, theme, isDark));
+
+        int startRange = current - 1;
+        int endRange = current + 1;
+
+        if (current <= 3) {
+          startRange = 2;
+          endRange = 4;
+        } else if (current >= pages - 2) {
+          startRange = pages - 3;
+          endRange = pages - 1;
+        }
+
+        // Add left ellipsis
+        if (startRange > 2) {
+          pageButtons.add(_buildEllipsis(isDark));
+        }
+
+        // Add middle pages
+        for (int i = startRange; i <= endRange; i++) {
+          if (i > 1 && i < pages) {
+            pageButtons.add(_buildPageNumberButton(i, current, theme, isDark));
+          }
+        }
+
+        // Add right ellipsis
+        if (endRange < pages - 1) {
+          pageButtons.add(_buildEllipsis(isDark));
+        }
+
+        // Always show the last page
+        pageButtons.add(_buildPageNumberButton(pages, current, theme, isDark));
+      }
 
       return Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -350,39 +424,8 @@ class ReviewTableComponent extends GetView<ReviewController> {
               ),
               const SizedBox(width: 4),
 
-              // Page numbers
-              ...List.generate(pages, (index) {
-                final pageNum = index + 1;
-                final isSelected = pageNum == current;
-                return GestureDetector(
-                  onTap: () => controller.changePage(pageNum),
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 2),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? theme.colorScheme.primary
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      '$pageNum',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: isSelected
-                            ? Colors.white
-                            : (isDark
-                                  ? Colors.grey.shade400
-                                  : Colors.grey.shade700),
-                      ),
-                    ),
-                  ),
-                );
-              }),
+              // Page numbers list
+              ...pageButtons,
 
               const SizedBox(width: 4),
               // Next Button
@@ -397,6 +440,53 @@ class ReviewTableComponent extends GetView<ReviewController> {
         ],
       );
     });
+  }
+
+  Widget _buildPageNumberButton(
+    int pageNum,
+    int current,
+    ThemeData theme,
+    bool isDark,
+  ) {
+    final isSelected = pageNum == current;
+    return GestureDetector(
+      onTap: () => controller.changePage(pageNum),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 2),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 10,
+          vertical: 6,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? theme.colorScheme.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(
+          '$pageNum',
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: isSelected
+                ? Colors.white
+                : (isDark ? Colors.grey.shade400 : Colors.grey.shade700),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEllipsis(bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Text(
+        '...',
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          color: isDark ? Colors.grey.shade500 : Colors.grey.shade600,
+        ),
+      ),
+    );
   }
 
   Widget _buildPaginationButton({
@@ -513,13 +603,16 @@ class ReviewTableComponent extends GetView<ReviewController> {
                           ],
                         ),
                         const SizedBox(height: 6),
-                        Text(
-                          '"${item.comment}"',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
+                        Obx(() {
+                          final controller = Get.find<HomeController>();
+                          return Text(
+                            '"${controller.censorText(item.comment)}"',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          );
+                        }),
                       ],
                     ),
                   ),

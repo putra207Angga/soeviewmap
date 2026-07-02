@@ -5,19 +5,75 @@ class SecureStorageServices extends GetxService {
   final _storage = GetStorage();
   String _encryptionKey = 'SoebandiGoogleMapReviewKeySecret';
 
+  bool _isInitialized = false;
+
+  @override
+  void onInit() {
+    super.onInit();
+    init();
+  }
+
   // Initialize GetStorage and load encryption key from .env
   Future<SecureStorageServices> init() async {
+    if (_isInitialized) return this;
     await GetStorage.init();
     await _loadEnvKey();
+    _isInitialized = true;
     return this;
   }
 
-  // Read external .env key
+  // Read external .env key from assets or local file
   Future<void> _loadEnvKey() async {
+    String? envContent;
+
+    // 1. Try reading from Flutter assets (.env)
     try {
-      final file = File('.env');
-      if (await file.exists()) {
-        final lines = await file.readAsLines();
+      envContent = await rootBundle.loadString('.env');
+      log("Loading from asset", name: 'SecStorageServices');
+    } catch (e, er) {
+      // Asset not found or failed to load
+      log(
+        "Loading failed from asset $e",
+        name: 'SecStorageServices',
+        error: er,
+      );
+    }
+
+    // 2. Try reading from local file if asset load failed (for desktop/tests)
+    if (envContent == null || envContent.isEmpty) {
+      if (!kIsWeb) {
+        try {
+          var dir = Directory.current;
+          File? foundFile;
+          while (true) {
+            final file = File('${dir.path}/.env');
+            if (file.existsSync()) {
+              foundFile = file;
+              break;
+            }
+            final parent = dir.parent;
+            if (parent.path == dir.path) {
+              break;
+            }
+            dir = parent;
+          }
+
+          if (foundFile != null && foundFile.existsSync()) {
+            envContent = await foundFile.readAsString();
+          }
+        } catch (e, er) {
+          log(
+            "Loading failed from local file $e",
+            name: 'SecStorageServices',
+            error: er,
+          );
+        }
+      }
+    }
+
+    if (envContent != null && envContent.isNotEmpty) {
+      try {
+        final lines = envContent.split('\n');
         String? storageKey;
         String? urlKey;
         String? urlIv;
@@ -53,29 +109,22 @@ class SecureStorageServices extends GetxService {
         if (urlIv != null) {
           ConfigEnvironments.urlDecryptionIv = urlIv;
         }
-      } else {
-        // Auto-generate hidden .env file with secure random keys
-        const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#%^&*()_+-=';
-        final randomStorageKey = List.generate(32, (index) => chars[DateTime.now().microsecondsSinceEpoch % chars.length]).join();
-        final randomUrlKey = List.generate(32, (index) => chars[(DateTime.now().microsecondsSinceEpoch + 1) % chars.length]).join();
-        final randomUrlIv = List.generate(16, (index) => chars[(DateTime.now().microsecondsSinceEpoch + 2) % chars.length]).join();
-
-        await file.writeAsString(
-          'STORAGE_ENCRYPTION_KEY=$randomStorageKey\n'
-          'URL_ENCRYPTION_KEY=$randomUrlKey\n'
-          'URL_ENCRYPTION_IV=$randomUrlIv\n',
+        if (urlKey != null && urlIv != null) {
+          return; // Success
+        }
+      } catch (e, er) {
+        log(
+          "Loading failed from parsing $e",
+          name: 'SecStorageServices',
+          error: er,
         );
-
-        _encryptionKey = randomStorageKey;
-        ConfigEnvironments.urlDecryptionKey = randomUrlKey;
-        ConfigEnvironments.urlDecryptionIv = randomUrlIv;
       }
-    } catch (e) {
-      // Sandbox fallback
-      _encryptionKey = 'SoebandiGoogleMapReviewKeySecret';
-      ConfigEnvironments.urlDecryptionKey = 'S0eb1sAppKey2026XXXXXXXXXX!@#\$%^';
-      ConfigEnvironments.urlDecryptionIv = 'S0eb1sIV2026!@#\$';
     }
+
+    // 3. Fallback keys if both asset and file fail
+    _encryptionKey = 'SoebandiGoogleMapReviewKeySecret';
+    ConfigEnvironments.urlDecryptionKey = 'S0eb1sAppKey2026XXXXXXXXXX!@#\$%^';
+    ConfigEnvironments.urlDecryptionIv = 'S0eb1sIV2026!@#\$';
   }
 
   // Encrypt and write to storage

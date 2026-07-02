@@ -6,7 +6,7 @@ enum AuthMode { login, lock }
 
 class AuthentifikasiController extends GetxController {
   final authMode = AuthMode.login.obs;
-  
+
   // Form keys for validation
   final loginFormKey = GlobalKey<FormState>();
   final lockFormKey = GlobalKey<FormState>();
@@ -25,7 +25,7 @@ class AuthentifikasiController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    usernameController = TextEditingController(text: 'admin@rsudsoebandi.gov');
+    usernameController = TextEditingController(text: 'admin');
     passwordController = TextEditingController();
     lockPasswordController = TextEditingController();
 
@@ -49,7 +49,7 @@ class AuthentifikasiController extends GetxController {
   }
 
   void toggleObscurePassword() => obscurePassword.toggle();
-  
+
   void toggleObscureLockPassword() => obscureLockPassword.toggle();
 
   void toggleRememberMe() => rememberMe.toggle();
@@ -66,57 +66,143 @@ class AuthentifikasiController extends GetxController {
 
   Future<void> signIn() async {
     if (!(loginFormKey.currentState?.validate() ?? false)) return;
-    
+
     isLoading.value = true;
-    
-    // Simulate API network call delay for modern feel with progress loader
-    await Future.delayed(const Duration(milliseconds: 1500));
-    
-    isLoading.value = false;
 
-    // Save authentications state to secure storage
-    SecureStorageServices.to.writeBool('is_logged_in', true);
-    SecureStorageServices.to.writeBool('is_locked', false);
-    
-    Get.snackbar(
-      'Sign In Success',
-      'Selamat datang kembali di Review Management System RSD Soebandi!',
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.green.shade50,
-      colorText: Colors.green.shade900,
-      icon: const Icon(Icons.check_circle_outline, color: Colors.green),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 12,
-    );
+    try {
+      final response = await AuthDao.use.login(
+        username: usernameController.text,
+        password: passwordController.text,
+      );
 
-    Get.offAllNamed(Routes.home);
+      isLoading.value = false;
+
+      if (response.statusCode == 200 && response.body != null) {
+        final resBody = response.body!;
+        final success = resBody['success'] as bool? ?? false;
+        final message = resBody['message'] as String? ?? 'Login successful.';
+
+        final appAccess = resBody['data']['app_access'] as num;
+
+        if (success && (appAccess == 3 || appAccess == 0)) {
+          final data = resBody['data'] as Map<String, dynamic>?;
+          final token = data?['token'] as String? ?? '';
+
+          if (token.isNotEmpty) {
+            // Save authentication state and token to secure storage
+            SecureStorageServices.to.write('token', token);
+            SecureStorageServices.to.writeBool('is_logged_in', true);
+            SecureStorageServices.to.writeBool('is_locked', false);
+
+            Get.snackbar(
+              'Sign In Success',
+              message,
+              snackPosition: SnackPosition.TOP,
+              backgroundColor: Colors.green.shade50,
+              colorText: Colors.green.shade900,
+              icon: const Icon(Icons.check_circle_outline, color: Colors.green),
+              margin: const EdgeInsets.all(16),
+              borderRadius: 12,
+            );
+
+            Get.offAllNamed(Routes.home);
+            return;
+          }
+        }
+      }
+
+      // Handle login failure
+      final errorMessage =
+          response.body?['message'] ??
+          response.statusText ??
+          'Username atau Password salah.';
+      Get.snackbar(
+        'Sign In Gagal',
+        errorMessage.toString(),
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red.shade50,
+        colorText: Colors.red.shade900,
+        icon: const Icon(Icons.error_outline_rounded, color: Colors.red),
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
+      );
+    } catch (e) {
+      isLoading.value = false;
+      Get.snackbar(
+        'Error',
+        'Terjadi kesalahan saat menghubungi server: $e',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red.shade50,
+        colorText: Colors.red.shade900,
+        icon: const Icon(Icons.error_outline_rounded, color: Colors.red),
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
+      );
+    }
   }
 
   Future<void> unlock() async {
     if (!(lockFormKey.currentState?.validate() ?? false)) return;
-    
+
     isLoading.value = true;
-    
-    // Simulate unlock check
-    await Future.delayed(const Duration(milliseconds: 1200));
-    
-    isLoading.value = false;
 
-    // Save locked status to secure storage
-    SecureStorageServices.to.writeBool('is_locked', false);
+    try {
+      final response = await AuthDao.checkPin(lockPasswordController.text);
+      isLoading.value = false;
 
-    Get.snackbar(
-      'System Unlocked',
-      'Sesi admin berhasil dipulihkan.',
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.indigo.shade50,
-      colorText: Colors.indigo.shade900,
-      icon: const Icon(Icons.lock_open_rounded, color: Colors.indigo),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 12,
-    );
+      if (response.statusCode == 200 && response.body != null) {
+        final resBody = response.body!;
+        final success = resBody['success'] as bool? ?? false;
+        final message =
+            resBody['message'] as String? ?? 'Sesi admin berhasil dipulihkan.';
 
-    Get.offAllNamed(Routes.home);
+        if (success) {
+          // Save locked status to secure storage
+          SecureStorageServices.to.writeBool('is_locked', false);
+
+          Get.snackbar(
+            'System Unlocked',
+            message,
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.indigo.shade50,
+            colorText: Colors.indigo.shade900,
+            icon: const Icon(Icons.lock_open_rounded, color: Colors.indigo),
+            margin: const EdgeInsets.all(16),
+            borderRadius: 12,
+          );
+
+          Get.offAllNamed(Routes.home);
+          return;
+        }
+      }
+
+      // Handle check-pin failure
+      final errorMessage =
+          response.body?['message'] ??
+          response.statusText ??
+          'PIN yang Anda masukkan salah.';
+      Get.snackbar(
+        'Unlock Gagal',
+        errorMessage.toString(),
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red.shade50,
+        colorText: Colors.red.shade900,
+        icon: const Icon(Icons.error_outline_rounded, color: Colors.red),
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
+      );
+    } catch (e) {
+      isLoading.value = false;
+      Get.snackbar(
+        'Error',
+        'Terjadi kesalahan saat menghubungi server: $e',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red.shade50,
+        colorText: Colors.red.shade900,
+        icon: const Icon(Icons.error_outline_rounded, color: Colors.red),
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
+      );
+    }
   }
 }
-

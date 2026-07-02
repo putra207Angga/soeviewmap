@@ -4,12 +4,14 @@ class TemplateCard extends StatelessWidget {
   final int rating;
   final String templateText;
   final VoidCallback onEditTap;
+  final VoidCallback onDeleteTap;
 
   const TemplateCard({
     super.key,
     required this.rating,
     required this.templateText,
     required this.onEditTap,
+    required this.onDeleteTap,
   });
 
   @override
@@ -24,7 +26,7 @@ class TemplateCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header Row: Star Rating RatingStars and Edit Button
+          // Header Row: Star Rating RatingStars and Edit/Delete Buttons
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -45,28 +47,53 @@ class TemplateCard extends StatelessWidget {
                   ),
                 ],
               ),
-              OutlinedButton.icon(
-                onPressed: onEditTap,
-                icon: const Icon(Icons.edit_outlined, size: 13),
-                label: const Text(
-                  'Edit',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: onEditTap,
+                    icon: const Icon(Icons.edit_outlined, size: 13),
+                    label: const Text(
+                      'Edit',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: theme.colorScheme.primary,
+                      side: BorderSide(
+                        color: theme.colorScheme.primary.withOpacity(0.4),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      backgroundColor: theme.colorScheme.primary.withOpacity(0.04),
+                      elevation: 0,
+                    ),
                   ),
-                ),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: theme.colorScheme.primary,
-                  side: BorderSide(
-                    color: theme.colorScheme.primary.withOpacity(0.4),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  backgroundColor: theme.colorScheme.primary.withOpacity(0.04),
-                  elevation: 0,
-                ),
+                  if (templateText.isNotEmpty) ...[
+                    const SizedBox(width: 8),
+                    IconButton(
+                      onPressed: onDeleteTap,
+                      icon: const Icon(Icons.delete_outline_rounded, size: 16, color: Colors.redAccent),
+                      tooltip: 'Hapus Template',
+                      constraints: const BoxConstraints(),
+                      padding: const EdgeInsets.all(8),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.red.withOpacity(0.04),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: BorderSide(
+                            color: Colors.redAccent.withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ],
           ),
@@ -90,18 +117,26 @@ class TemplateCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
-                  Icons.format_quote_rounded,
+                  templateText.isEmpty
+                      ? Icons.info_outline_rounded
+                      : Icons.format_quote_rounded,
                   size: 20,
-                  color: theme.colorScheme.primary.withOpacity(0.5),
+                  color: templateText.isEmpty
+                      ? Colors.orange.withOpacity(0.6)
+                      : theme.colorScheme.primary.withOpacity(0.5),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    templateText,
+                    templateText.isEmpty
+                        ? 'Belum ada template balasan untuk rating bintang $rating. Silakan klik tombol Edit di atas untuk menyusun template baru.'
+                        : templateText,
                     style: TextStyle(
                       fontSize: 12,
                       fontStyle: FontStyle.italic,
-                      color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                      color: templateText.isEmpty
+                          ? (isDark ? Colors.grey.shade500 : Colors.grey.shade400)
+                          : (isDark ? Colors.grey.shade300 : Colors.grey.shade700),
                       height: 1.4,
                     ),
                   ),
