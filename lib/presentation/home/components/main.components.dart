@@ -1,5 +1,4 @@
 import 'package:soeviewmap/domain/main.domains.dart';
-
 import '../controllers/home.controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

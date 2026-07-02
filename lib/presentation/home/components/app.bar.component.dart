@@ -120,7 +120,9 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
                                   style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,
-                                    color: isDark ? Colors.white : Colors.black87,
+                                    color: isDark
+                                        ? Colors.white
+                                        : Colors.black87,
                                   ),
                                 ),
                               ],
@@ -176,7 +178,8 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
                               shrinkWrap: true,
                               physics: const ClampingScrollPhysics(),
                               itemCount: items.length,
-                              separatorBuilder: (_, index) => const SizedBox(height: 10),
+                              separatorBuilder: (_, index) =>
+                                  const SizedBox(height: 10),
                               itemBuilder: (context, idx) {
                                 final notif = items[idx];
                                 return GestureDetector(
@@ -327,10 +330,14 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
     if (rating != null && rating <= 2) {
       return Icons.warning_amber_rounded;
     }
-    if (title.contains('negatif') || title.contains('warning') || title.contains('error')) {
+    if (title.contains('negatif') ||
+        title.contains('warning') ||
+        title.contains('error')) {
       return Icons.warning_amber_rounded;
     }
-    if (title.contains('terkirim') || title.contains('sukses') || title.contains('success')) {
+    if (title.contains('terkirim') ||
+        title.contains('sukses') ||
+        title.contains('success')) {
       return Icons.check_circle_rounded;
     }
     return Icons.rss_feed_rounded;
@@ -342,10 +349,14 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
     if (rating != null && rating <= 2) {
       return const Color(0xFFF59E0B);
     }
-    if (title.contains('negatif') || title.contains('warning') || title.contains('error')) {
+    if (title.contains('negatif') ||
+        title.contains('warning') ||
+        title.contains('error')) {
       return const Color(0xFFEF4444);
     }
-    if (title.contains('terkirim') || title.contains('sukses') || title.contains('success')) {
+    if (title.contains('terkirim') ||
+        title.contains('sukses') ||
+        title.contains('success')) {
       return const Color(0xFF10B981);
     }
     return const Color(0xFF6366F1);
