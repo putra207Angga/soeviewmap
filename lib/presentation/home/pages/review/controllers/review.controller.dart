@@ -2,7 +2,7 @@ part of '../../main.pages.dart';
 
 class ReviewController extends GetxController {
   // Reactive list of reviews
-  final reviews = <ReviewModel>[].obs;
+  final reviews = <ReviewUiModel>[].obs;
 
   // Active Filters
   final selectedStatus = 'All'.obs; // 'All', 'Pending', 'Replied'
@@ -97,18 +97,9 @@ class ReviewController extends GetxController {
         meta.value = response.body!.meta;
         final List<dom.ReviewModel> apiReviews = response.body!.items;
         final mappedReviews = apiReviews.map((item) {
-          return ReviewModel(
-            id: item.id.toString(),
-            reviewerName: item.reviewerName,
-            reviewerAvatar:
-                'https://api.dicebear.com/7.x/pixel-art/png?seed=${item.reviewerName}',
-            rating: item.rating.toDouble(),
-            comment: item.comment,
-            date: _formatDateTime(item.createdAt),
-            locationName: 'RSUD dr. Soebandi',
-            sentiment: item.sentiment.toLowerCase(),
-            tags: item.keywords.map((k) => '#$k').toList(),
-            initialReply: item.replyText,
+          return ReviewUiModel.formReviewModel(
+            data: item,
+            selectedLocation: 'RSUD dr. Soebandi',
           );
         }).toList();
         reviews.assignAll(mappedReviews);
@@ -123,29 +114,11 @@ class ReviewController extends GetxController {
     }
   }
 
-  String _formatDateTime(DateTime dt) {
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
-  }
-
   // Filtered reviews list is returned directly from the API result
-  List<ReviewModel> get filteredReviews => reviews;
+  List<ReviewUiModel> get filteredReviews => reviews;
 
   // Since server handles pagination, the list returned contains only current page reviews.
-  List<ReviewModel> get paginatedReviews => filteredReviews;
+  List<ReviewUiModel> get paginatedReviews => filteredReviews;
 
   // Pagination calculations using server metadata
   int get totalReviewsCount => meta.value?.totalItems ?? filteredReviews.length;

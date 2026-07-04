@@ -2,7 +2,7 @@ part of 'main.components.dart';
 
 class AiReplyDialog extends StatefulWidget {
   const AiReplyDialog({super.key, required this.review});
-  final ReviewModel review;
+  final ReviewUiModel review;
 
   @override
   State<AiReplyDialog> createState() => _AiReplyDialogState();
@@ -232,7 +232,7 @@ class _AiReplyDialogState extends State<AiReplyDialog> {
                             ? null
                             : () {
                                 controller.submitReply(
-                                  widget.review.id,
+                                  widget.review.reviewId,
                                   _replyTextController.text,
                                 );
                                 Get.back();
@@ -274,7 +274,13 @@ class _AiReplyDialogState extends State<AiReplyDialog> {
   }
 
   Widget _buildToneSelector() {
-    final tones = ['Gen Z Slang', 'Professional', 'Friendly', 'Concise'];
+    final tones = [
+      'Gen Z Slang',
+      'Professional',
+      'Friendly',
+      'Concise',
+      'Template',
+    ];
     return Wrap(
       spacing: 6,
       runSpacing: 6,
@@ -290,6 +296,9 @@ class _AiReplyDialogState extends State<AiReplyDialog> {
             break;
           case 'Friendly':
             toneColor = const Color(0xFF10B981); // Emerald
+            break;
+          case 'Template':
+            toneColor = const Color(0xFFF59E0B); // Amber
             break;
           default:
             toneColor = const Color(0xFF6B7280); // Gray
@@ -317,11 +326,31 @@ class _AiReplyDialogState extends State<AiReplyDialog> {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           labelPadding: EdgeInsets.zero,
           showCheckmark: false,
-          onSelected: (selected) {
+          onSelected: (selected) async {
             if (selected) {
               setState(() {
                 _selectedTone = tone;
               });
+
+              if (_selectedTone == "Template") {
+                final templateCtrl = Get.find<TemplateController>();
+                final reviewRating =
+                    widget.review.rating.round().clamp(1, 5);
+                final templateText =
+                    templateCtrl.starTemplates[reviewRating];
+
+                if (templateText != null && templateText.isNotEmpty) {
+                  final applied = templateText
+                      .replaceAll(
+                          '{reviewerName}', widget.review.reviewerName)
+                      .replaceAll(
+                          '{locationName}', widget.review.locationName);
+                  _replyTextController.text = applied;
+                  controller.generatedReply.value = applied;
+                  return;
+                }
+                // No template for this rating — fallback to AI draft
+              }
               _generateDraft();
             }
           },

@@ -112,7 +112,7 @@ class ReviewTableComponent extends GetView<ReviewController> {
 
   Widget _buildReviewRow(
     BuildContext context,
-    ReviewModel item,
+    ReviewUiModel item,
     bool isDark,
     ThemeData theme,
   ) {
@@ -255,7 +255,9 @@ class ReviewTableComponent extends GetView<ReviewController> {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? const Color(0xFF818CF8) : theme.colorScheme.primary,
+                        color: isDark
+                            ? const Color(0xFF818CF8)
+                            : theme.colorScheme.primary,
                       ),
                     ),
                   );
@@ -296,11 +298,7 @@ class ReviewTableComponent extends GetView<ReviewController> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.search_off_rounded,
-            size: 48,
-            color: Colors.grey.shade500,
-          ),
+          Icon(Icons.search_off_rounded, size: 48, color: Colors.grey.shade500),
           const SizedBox(height: 12),
           Text(
             'Tidak ada ulasan ditemukan',
@@ -328,9 +326,7 @@ class ReviewTableComponent extends GetView<ReviewController> {
           const SizedBox(
             width: 32,
             height: 32,
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-            ),
+            child: CircularProgressIndicator(strokeWidth: 3),
           ),
           const SizedBox(height: 12),
           Text(
@@ -453,10 +449,7 @@ class ReviewTableComponent extends GetView<ReviewController> {
       onTap: () => controller.changePage(pageNum),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 2),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 10,
-          vertical: 6,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected ? theme.colorScheme.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(6),
@@ -523,7 +516,7 @@ class ReviewTableComponent extends GetView<ReviewController> {
     );
   }
 
-  void _openQuickReplyDialog(BuildContext context, ReviewModel item) {
+  void _openQuickReplyDialog(BuildContext context, ReviewUiModel item) {
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -534,7 +527,7 @@ class ReviewTableComponent extends GetView<ReviewController> {
     );
   }
 
-  void _openViewThreadDialog(BuildContext context, ReviewModel item) {
+  void _openViewThreadDialog(BuildContext context, ReviewUiModel item) {
     showDialog(
       context: context,
       builder: (context) {

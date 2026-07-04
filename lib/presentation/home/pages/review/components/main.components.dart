@@ -2,6 +2,8 @@
 // to share GetX controller context, models, and page-level dependencies.
 //
 // Physical files included in this module:
+import 'package:soeviewmap/domain/main.domains.dart';
+
 import '../../dahsboard/components/main.components.dart';
 import 'package:soeviewmap/presentation/screens.dart';
 import '../../../components/main.components.dart';

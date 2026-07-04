@@ -1,33 +1,5 @@
 part of '../../main.pages.dart';
 
-class ReviewModel {
-  final String id;
-  final String reviewerName;
-  final String reviewerAvatar;
-  final double rating;
-  final String comment;
-  final String date;
-  final String locationName;
-  final String sentiment; // 'positive' | 'neutral' | 'negative'
-  final List<String> tags;
-  var replyText = ''.obs;
-
-  ReviewModel({
-    required this.id,
-    required this.reviewerName,
-    required this.reviewerAvatar,
-    required this.rating,
-    required this.comment,
-    required this.date,
-    required this.locationName,
-    required this.sentiment,
-    required this.tags,
-    String initialReply = '',
-  }) {
-    replyText.value = initialReply;
-  }
-}
-
 class MapLocationModel {
   final String name;
   final double dx; // relative X coordinate (0.0 to 1.0)
@@ -46,7 +18,7 @@ class MapLocationModel {
 
 class DahsboardController extends GetxController {
   // Mock reviews for Google Maps (RS Soebandi Context)
-  final reviews = <ReviewModel>[].obs;
+  final reviews = <ReviewUiModel>[].obs;
 
   // Selected filters
   final selectedLocation = RxnString();
@@ -140,21 +112,14 @@ class DahsboardController extends GetxController {
       );
       if (response.statusCode == 200 && response.body != null) {
         final List<dom.ReviewModel> apiReviews = response.body!.items;
-        final mappedReviews = apiReviews.map((item) {
-          return ReviewModel(
-            id: item.id.toString(),
-            reviewerName: item.reviewerName,
-            reviewerAvatar:
-                'https://api.dicebear.com/7.x/pixel-art/png?seed=${item.reviewerName}',
-            rating: item.rating.toDouble(),
-            comment: item.comment,
-            date: _formatDateTime(item.createdAt),
-            locationName: selectedLocation.value ?? 'RSUD dr. Soebandi',
-            sentiment: item.sentiment.toLowerCase(),
-            tags: item.keywords.map((k) => '#$k').toList(),
-            initialReply: item.replyText,
-          );
-        }).toList();
+        final mappedReviews = apiReviews
+            .map(
+              (item) => ReviewUiModel.formReviewModel(
+                data: item,
+                selectedLocation: selectedLocation.value,
+              ),
+            )
+            .toList();
         reviews.assignAll(mappedReviews);
       }
     } catch (e) {
@@ -164,26 +129,8 @@ class DahsboardController extends GetxController {
     }
   }
 
-  String _formatDateTime(DateTime dt) {
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
-  }
-
   // Filtered reviews list
-  List<ReviewModel> get filteredReviews {
+  List<ReviewUiModel> get filteredReviews {
     return reviews.where((review) {
       // Location Filter
       if (selectedLocation.value != null &&
@@ -265,7 +212,7 @@ class DahsboardController extends GetxController {
   }
 
   // AI Reply Simulation
-  Future<void> generateAiReply(ReviewModel review, String tone) async {
+  Future<void> generateAiReply(ReviewUiModel review, String tone) async {
     isGeneratingReply.value = true;
     generatedReply.value = '';
 
@@ -323,7 +270,8 @@ class DahsboardController extends GetxController {
         replyText: reply,
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final idx = reviews.indexWhere((r) => r.id == reviewId);
+        // Find by reviewId field (not the database id)
+        final idx = reviews.indexWhere((r) => r.reviewId == reviewId);
         if (idx != -1) {
           reviews[idx].replyText.value = reply;
           reviews.refresh();
@@ -331,7 +279,7 @@ class DahsboardController extends GetxController {
 
         if (Get.isRegistered<ReviewController>()) {
           final reviewCtrl = Get.find<ReviewController>();
-          final idx2 = reviewCtrl.reviews.indexWhere((r) => r.id == reviewId);
+          final idx2 = reviewCtrl.reviews.indexWhere((r) => r.reviewId == reviewId);
           if (idx2 != -1) {
             reviewCtrl.reviews[idx2].replyText.value = reply;
             reviewCtrl.reviews.refresh();

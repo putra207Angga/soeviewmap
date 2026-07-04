@@ -281,7 +281,7 @@ class ReviewsListComponent extends GetView<DahsboardController> {
 
   Widget _buildReviewCard(
     BuildContext context,
-    ReviewModel item,
+    ReviewUiModel item,
     bool isDark,
     ThemeData theme,
   ) {
@@ -510,7 +510,7 @@ class ReviewsListComponent extends GetView<DahsboardController> {
     );
   }
 
-  void _openAiReplySheet(BuildContext context, ReviewModel item) {
+  void _openAiReplySheet(BuildContext context, ReviewUiModel item) {
     showDialog(
       context: context,
       barrierDismissible: true,

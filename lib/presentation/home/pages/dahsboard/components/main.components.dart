@@ -3,6 +3,7 @@
 //
 // Physical files included in this module:
 
+import 'package:soeviewmap/domain/models/main.models.dart';
 import 'package:soeviewmap/presentation/screens.dart';
 import '../../../components/main.components.dart';
 import 'package:flutter/material.dart';
