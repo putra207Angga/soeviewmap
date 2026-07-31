@@ -181,12 +181,13 @@ class ReviewController extends GetxController {
   }
 
   int get pendingReviewsCount {
+    if (stats.value != null) return stats.value!.pendingCount;
     return reviews.where((r) => r.replyText.value.isEmpty).length;
   }
 
   String get avgResponseTime {
     if (stats.value != null) {
-      return '${stats.value!.responseRatePercentage}%';
+      return '${stats.value!.avgResponseHours} hrs';
     }
     return '2.4 hrs';
   }

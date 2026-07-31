@@ -23,7 +23,18 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // Load Settings
+    loadSettings();
+
+    fetchUserProfile().then((_) {
+      if (userProfile.value != null) {
+        fetchNotifications();
+        fetchUnreadCount();
+        startPolling();
+      }
+    });
+  }
+
+  void loadSettings() {
     isFilterProfanity.value = SecureStorageServices.to.readBool(
       'settings_filter_profanity',
       defaultValue: true,
@@ -37,14 +48,6 @@ class HomeController extends GetxController {
           SecureStorageServices.to.read('settings_notification_limit') ?? '50',
         ) ??
         50;
-
-    fetchUserProfile().then((_) {
-      if (userProfile.value != null) {
-        fetchNotifications();
-        fetchUnreadCount();
-        startPolling();
-      }
-    });
   }
 
   Future<void> fetchUserProfile() async {

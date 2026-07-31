@@ -386,7 +386,10 @@ class ReviewsListComponent extends GetView<DahsboardController> {
           const SizedBox(height: 8),
 
           // Comment content
-          Text(item.comment, style: const TextStyle(fontSize: 11, height: 1.4)),
+          Text(
+            Get.find<HomeController>().censorText(item.comment),
+            style: const TextStyle(fontSize: 11, height: 1.4),
+          ),
           const SizedBox(height: 8),
 
           // Tags row & Sentiment indicator

@@ -161,7 +161,7 @@ class _AiReplyDialogState extends State<AiReplyDialog> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '"${widget.review.comment}"',
+                              '"${Get.find<HomeController>().censorText(widget.review.comment)}"',
                               style: TextStyle(
                                 fontSize: 11,
                                 color: isDark

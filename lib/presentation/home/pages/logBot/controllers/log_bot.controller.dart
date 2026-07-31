@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:get/get.dart';
 import 'package:soeviewmap/domain/main.domains.dart' as dom;
 import 'package:soeviewmap/infrastructure/main.infrastructures.dart';
+import 'package:soeviewmap/presentation/screens.dart';
 
 class LogBotController extends GetxController {
   final botStatus = Rxn<dom.BotModel>();
@@ -11,10 +13,29 @@ class LogBotController extends GetxController {
   final selectedLevel = 'All'.obs; // 'All', 'INFO', 'SUCCESS', 'WARNING', 'ERROR'
   final searchQuery = ''.obs;
 
+  StreamSubscription? _navSubscription;
+  Timer? _liveTimer;
+
   @override
   void onInit() {
     super.onInit();
     refreshData();
+
+    // Set up auto-refresh when Log Bot page is active
+    if (Get.isRegistered<HomeController>()) {
+      final homeCtrl = Get.find<HomeController>();
+      _navSubscription = homeCtrl.selectedNavIndex.listen((menu) {
+        if (menu == dom.NavMenu.logBot) {
+          _startLiveTracking();
+        } else {
+          _stopLiveTracking();
+        }
+      });
+
+      if (homeCtrl.selectedNavIndex.value == dom.NavMenu.logBot) {
+        _startLiveTracking();
+      }
+    }
   }
 
   Future<void> refreshData() async {
@@ -141,4 +162,37 @@ class LogBotController extends GetxController {
   int get successCount => logs.where((l) => l.level.toUpperCase() == 'SUCCESS').length;
   int get warningCount => logs.where((l) => l.level.toUpperCase() == 'WARNING').length;
   int get errorCount => logs.where((l) => l.level.toUpperCase() == 'ERROR').length;
+
+  void _startLiveTracking() {
+    _liveTimer?.cancel();
+    // 15 seconds refresh interval is extremely lightweight
+    _liveTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      if (!isLoading.value) {
+        _fetchSilentData();
+      }
+    });
+  }
+
+  void _stopLiveTracking() {
+    _liveTimer?.cancel();
+    _liveTimer = null;
+  }
+
+  Future<void> _fetchSilentData() async {
+    try {
+      await Future.wait([
+        fetchBotStatus(),
+        fetchBotLogs(),
+      ]);
+    } catch (e) {
+      print('LogBotController live refresh error: $e');
+    }
+  }
+
+  @override
+  void onClose() {
+    _navSubscription?.cancel();
+    _stopLiveTracking();
+    super.onClose();
+  }
 }

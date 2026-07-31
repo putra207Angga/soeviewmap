@@ -71,7 +71,7 @@ class BalasTableComponent extends GetView<BalasController> {
                             ),
                           );
                         }
-                        final items = controller.replyLogs;
+                        final items = controller.filteredReplyLogs;
                         if (items.isEmpty) {
                           return _buildEmptyState(isDark);
                         }
@@ -106,18 +106,18 @@ class BalasTableComponent extends GetView<BalasController> {
     bool isDark,
   ) {
     return Obx(() {
+      final months = controller.availableMonths;
       return PopupMenuButton<String>(
         onSelected: (month) => controller.changeMonth(month),
         offset: const Offset(0, 35),
-        itemBuilder: (context) =>
-            ['Oktober 2023', 'September 2023', 'Agustus 2023']
-                .map(
-                  (m) => PopupMenuItem(
-                    value: m,
-                    child: Text(m, style: const TextStyle(fontSize: 11)),
-                  ),
-                )
-                .toList(),
+        itemBuilder: (context) => months
+            .map(
+              (m) => PopupMenuItem(
+                value: m,
+                child: Text(m, style: const TextStyle(fontSize: 11)),
+              ),
+            )
+            .toList(),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
@@ -283,7 +283,7 @@ class BalasTableComponent extends GetView<BalasController> {
               child: Padding(
                 padding: const EdgeInsets.only(right: 12),
                 child: Text(
-                  item.reviewText.isEmpty ? '-' : '"${item.reviewText}"',
+                  item.reviewText.isEmpty ? '-' : '"${Get.find<HomeController>().censorText(item.reviewText)}"',
                   style: TextStyle(
                     fontSize: 11,
                     color: isDark

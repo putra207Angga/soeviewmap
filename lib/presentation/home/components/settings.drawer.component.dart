@@ -8,6 +8,9 @@ class SettingsDrawer extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final controller = Get.find<HomeController>();
+    
+    // Reload settings from storage to discard unsaved edits when reopened
+    controller.loadSettings();
 
     return Drawer(
       backgroundColor: isDark ? const Color(0xFF13151A) : Colors.white,

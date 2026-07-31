@@ -109,7 +109,7 @@ class BalasDetailsDialog extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  logItem.reviewText.isEmpty ? '-' : '"${logItem.reviewText}"',
+                  logItem.reviewText.isEmpty ? '-' : '"${Get.find<HomeController>().censorText(logItem.reviewText)}"',
                   style: TextStyle(
                     fontSize: 11,
                     fontStyle: FontStyle.italic,

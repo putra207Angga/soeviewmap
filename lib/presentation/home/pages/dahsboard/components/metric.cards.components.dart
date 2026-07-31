@@ -28,8 +28,10 @@ class DashboardMetricsGrid extends GetView<DahsboardController> {
             context: context,
             title: 'Total Reviews',
             value: '${controller.totalReviewsCount}',
-            trend: '+12% minggu ini',
-            trendPositive: true,
+            trend: controller.pendingCount > 0
+                ? '${controller.pendingCount} pending ulasan'
+                : 'Semua ulasan dibalas',
+            trendPositive: controller.pendingCount == 0,
             icon: Icons.rate_review_rounded,
             color: const Color(0xFF6366F1), // Indigo
             subtitle: 'Review dari Google Map',
@@ -38,8 +40,8 @@ class DashboardMetricsGrid extends GetView<DahsboardController> {
             context: context,
             title: 'Rating Rata-rata',
             value: '${controller.averageRating}',
-            trend: 'Stable (4.8★)',
-            trendPositive: true,
+            trend: 'Stable (${controller.averageRating}★)',
+            trendPositive: controller.averageRating >= 4.0,
             icon: Icons.star_rounded,
             color: const Color(0xFFF59E0B), // Amber
             isRating: true,
@@ -48,21 +50,21 @@ class DashboardMetricsGrid extends GetView<DahsboardController> {
             context: context,
             title: 'Positive Vibes',
             value: '${controller.positivePercentage}%',
-            trend: 'Lolos Vibe Check! ✨',
-            trendPositive: controller.positivePercentage >= 80,
+            trend: '${controller.positiveVibesTrendPercentage >= 0 ? '+' : ''}${controller.positiveVibesTrendPercentage}% vs kemarin',
+            trendPositive: controller.positiveVibesTrendPercentage >= 0,
             icon: Icons.emoji_emotions_rounded,
             color: const Color(0xFF10B981), // Emerald
             subtitle: 'Ulasan Sentimen Positif',
           ),
           _buildMetricCard(
             context: context,
-            title: 'Response Rate',
-            value: '${controller.responseRate}%',
-            trend: '+5% vs kemarin',
-            trendPositive: true,
-            icon: Icons.quickreply_rounded,
+            title: 'Avg Response Time',
+            value: '${controller.avgResponseHours} hrs',
+            trend: '${controller.responseTargetDifferenceMinutes <= 0 ? '' : '+'}${controller.responseTargetDifferenceMinutes}m vs target',
+            trendPositive: controller.responseTargetDifferenceMinutes <= 0,
+            icon: Icons.timer_rounded,
             color: const Color(0xFF06B6D4), // Cyan
-            subtitle: 'Ulasan yang sudah dibalas',
+            subtitle: 'Rata-rata kecepatan respon',
           ),
         ],
       );

@@ -49,29 +49,39 @@ class ReviewAnalyticsPanel extends GetView<ReviewController> {
 
           // 2. Avg Response Time Card
           _buildAnalyticsCard(
-            title: controller.stats.value != null ? 'TINGKAT RESPON' : 'AVG WAKTU RESPON',
+            title: 'AVG WAKTU RESPON',
             value: avgResponse,
             subtitle: controller.stats.value != null
-                ? 'Persentase ulasan yang berhasil ditanggapi oleh Tim Humas.'
+                ? 'Lebih ${controller.stats.value!.responseTargetDifferenceMinutes <= 0 ? 'cepat' : 'lambat'} ${controller.stats.value!.responseTargetDifferenceMinutes.abs()} menit dari target operasional RSUD.'
                 : 'Lebih cepat 18 menit dari target operasional RSUD.',
             child: Row(
               children: [
                 Icon(
                   controller.stats.value != null
-                      ? Icons.check_circle_outline_rounded
+                      ? (controller.stats.value!.responseTargetDifferenceMinutes <= 0
+                          ? Icons.arrow_downward_rounded
+                          : Icons.arrow_upward_rounded)
                       : Icons.arrow_downward_rounded,
                   size: 14,
-                  color: const Color(0xFF10B981),
+                  color: controller.stats.value != null
+                      ? (controller.stats.value!.responseTargetDifferenceMinutes <= 0
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFF43F5E))
+                      : const Color(0xFF10B981),
                 ),
                 const SizedBox(width: 4),
                 Text(
                   controller.stats.value != null
-                      ? 'Kinerja Bagus'
+                      ? '${controller.stats.value!.responseTargetDifferenceMinutes <= 0 ? '-' : '+'}${controller.stats.value!.responseTargetDifferenceMinutes.abs()}m dari target'
                       : '-18m dari target',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF10B981),
+                    color: controller.stats.value != null
+                        ? (controller.stats.value!.responseTargetDifferenceMinutes <= 0
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFFF43F5E))
+                        : const Color(0xFF10B981),
                   ),
                 ),
               ],

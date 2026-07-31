@@ -46,7 +46,7 @@ class BalasScreen extends GetView<BalasController> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      onPressed: () => controller.fetchReplyLogs(),
+                      onPressed: () => controller.fetchReplyLogs(showSnackbar: true),
                       icon: const Icon(Icons.refresh_rounded, size: 16),
                       tooltip: 'Segarkan data',
                       style: IconButton.styleFrom(
@@ -64,11 +64,15 @@ class BalasScreen extends GetView<BalasController> {
                     const SizedBox(width: 8),
                     OutlinedButton.icon(
                       onPressed: () {
-                        Get.snackbar(
-                          'Reply Tracking Active',
-                          'Bot auto-reply tracking is running and auditing response logs.',
-                          snackPosition: SnackPosition.BOTTOM,
-                        );
+                        if (Get.isRegistered<HomeController>()) {
+                          Get.find<HomeController>().selectedNavIndex.value = NavMenu.logBot;
+                        } else {
+                          Get.snackbar(
+                            'Reply Tracking Active',
+                            'Bot auto-reply tracking is running and auditing response logs.',
+                            snackPosition: SnackPosition.BOTTOM,
+                          );
+                        }
                       },
                       icon: const Icon(Icons.analytics_outlined, size: 13),
                       label: const Text(
@@ -119,21 +123,24 @@ class BalasScreen extends GetView<BalasController> {
               }
               return content;
             } else {
-              // Mobile/tablet scrollable view
-              return SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      header,
-                      const SizedBox(height: 16),
-                      const SizedBox(
-                        height: 500,
-                        child: BalasTableComponent(),
-                      ),
-                    ],
+              // Mobile/tablet scrollable view with pull-to-refresh
+              return RefreshIndicator(
+                onRefresh: () => controller.fetchReplyLogs(showSnackbar: true),
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        header,
+                        const SizedBox(height: 16),
+                        const SizedBox(
+                          height: 500,
+                          child: BalasTableComponent(),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );

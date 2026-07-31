@@ -24,7 +24,7 @@ class BalasLogModel {
 }
 
 class BalasController extends GetxController {
-  final selectedMonth = 'Oktober 2023'.obs;
+  final selectedMonth = 'Juli 2026'.obs;
   final isExporting = false.obs;
   final isLoading = true.obs;
 
@@ -37,7 +37,7 @@ class BalasController extends GetxController {
     fetchReplyLogs();
   }
 
-  Future<void> fetchReplyLogs() async {
+  Future<void> fetchReplyLogs({bool showSnackbar = false}) async {
     isLoading.value = true;
     try {
       final response = await ReviewDao.use.getReviews(status: 'replied');
@@ -55,6 +55,30 @@ class BalasController extends GetxController {
           );
         }).toList();
         replyLogs.assignAll(mapped);
+        
+        // Dynamically select the first available month if any
+        final months = availableMonths;
+        if (months.isNotEmpty) {
+          if (!months.contains(selectedMonth.value)) {
+            selectedMonth.value = months.first;
+          }
+        }
+
+        if (showSnackbar) {
+          Get.snackbar(
+            'Refresh Sukses',
+            'Log balasan berhasil diperbarui dari server.',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Get.isDarkMode
+                ? const Color(0xFF1E222B)
+                : Colors.white.withOpacity(0.95),
+            colorText: Get.isDarkMode ? Colors.white : Colors.black,
+            borderWidth: 1,
+            borderColor: Get.isDarkMode
+                ? const Color(0xFF2E3440)
+                : Colors.grey.shade200,
+          );
+        }
       } else {
         _loadMockLogs();
       }
@@ -88,65 +112,174 @@ class BalasController extends GetxController {
     replyLogs.assignAll([
       BalasLogModel(
         id: '1',
-        date: '24 Okt 2023',
-        reviewerName: 'Ahmad Subagyo',
+        date: '28 Jul 2026',
+        reviewerName: 'Nia utami',
         rating: 5.0,
-        reviewText: 'Pelayanan poli jantung sangat memuaskan, dokter ramah.',
-        initialReply:
-            'Terima kasih atas apresiasinya, Ahmad. Kami akan terus meningkatkan layanan.',
+        reviewText: 'Adik saya melahirkan diruang bersalin, dokter dan bidannya telaten dan ramah. S...',
+        initialReply: 'Yth. Bapak/Ibu Nia utami,',
         initialStatus: 'terkirim',
       ),
       BalasLogModel(
         id: '2',
-        date: '23 Okt 2023',
-        reviewerName: 'Siti Aminah',
-        rating: 2.0,
-        reviewText: 'Antrian farmasi terlalu panjang, mohon diperbaiki.',
-        initialReply:
-            'Mohon maaf atas ketidaknyamanannya. Kami sedang mengevaluasi sistem antrian.',
-        initialStatus: 'pending',
+        date: '28 Jul 2026',
+        reviewerName: 'Meinar Eka',
+        rating: 5.0,
+        reviewText: 'Istri saya dirawat di ruang bersalin, selama dirawat disini pelayanannya baik, ...',
+        initialReply: 'Yth. Bapak/Ibu Meinar Eka,',
+        initialStatus: 'terkirim',
       ),
       BalasLogModel(
         id: '3',
-        date: '22 Okt 2023',
-        reviewerName: 'Budi Santoso',
-        rating: 4.0,
-        reviewText: 'Dokternya ramah sekali, terima kasih.',
-        initialReply:
-            'Sama-sama Bapak Budi, senang bisa membantu proses pemulihan Anda.',
+        date: '27 Jul 2026',
+        reviewerName: 'Erick Bsett',
+        rating: 5.0,
+        reviewText: 'Pelayanan Dokter dan Bidan "Dokter kandungan dan bidannya sangat ramah, s...',
+        initialReply: 'Yth. Bapak/Ibu Erick Bsett,',
         initialStatus: 'terkirim',
       ),
       BalasLogModel(
         id: '4',
-        date: '20 Okt 2023',
-        reviewerName: 'Dewi Lestari',
+        date: '27 Jul 2026',
+        reviewerName: 'Amelia Vieta',
         rating: 5.0,
-        reviewText: 'Sangat puas dengan penanganan cepat di IGD RSUD Soebandi.',
-        initialReply:
-            'Terima kasih Ibu Dewi, keselamatan pasien adalah prioritas utama kami.',
+        reviewText: 'Pelayanan baik dan telaten',
+        initialReply: 'Yth. Bapak/Ibu Amelia Vieta,',
         initialStatus: 'terkirim',
       ),
       BalasLogModel(
         id: '5',
-        date: '18 Okt 2023',
-        reviewerName: 'Joko Widodo',
-        rating: 3.0,
-        reviewText:
-            'Fasilitas parkir cukup luas tapi petunjuk jalurnya kurang jelas.',
-        initialReply: '',
-        initialStatus: 'pending',
+        date: '27 Jul 2026',
+        reviewerName: 'nurul yaqinbinahmad',
+        rating: 5.0,
+        reviewText: 'Fasilitas bersih dan lengkap, pelayanan ramah.',
+        initialReply: 'Yth. Bapak/Ibu nurul yaqinbinahmad,',
+        initialStatus: 'terkirim',
       ),
       BalasLogModel(
         id: '6',
         date: '15 Okt 2023',
         reviewerName: 'Mega Puspita',
         rating: 1.0,
-        reviewText:
-            'Jadwal dokter tidak sesuai jam praktek yang tertera di website.',
+        reviewText: 'Jadwal dokter tidak sesuai jam praktek yang tertera di website.',
         initialReply: '',
         initialStatus: 'pending',
       ),
     ]);
+
+    // Force select July 2026 as it matches mock data
+    final months = availableMonths;
+    if (months.contains('Juli 2026')) {
+      selectedMonth.value = 'Juli 2026';
+    } else if (months.isNotEmpty) {
+      selectedMonth.value = months.first;
+    }
+  }
+
+  List<String> get availableMonths {
+    final months = <String>{};
+    for (final log in replyLogs) {
+      final parts = log.date.split(' ');
+      if (parts.length >= 3) {
+        final logMonthAbbr = parts[1];
+        final logYear = parts[2];
+        final fullName = _getFullMonthName(logMonthAbbr);
+        months.add('$fullName $logYear');
+      }
+    }
+    final list = months.toList();
+    list.sort((a, b) {
+      try {
+        final aParts = a.split(' ');
+        final bParts = b.split(' ');
+        final aYear = int.parse(aParts[1]);
+        final bYear = int.parse(bParts[1]);
+        if (aYear != bYear) {
+          return bYear.compareTo(aYear);
+        }
+        final aMonthIdx = _getMonthIndex(aParts[0]);
+        final bMonthIdx = _getMonthIndex(bParts[0]);
+        return bMonthIdx.compareTo(aMonthIdx);
+      } catch (e) {
+        return 0;
+      }
+    });
+    if (list.isEmpty) {
+      return ['Juli 2026', 'Oktober 2023'];
+    }
+    return list;
+  }
+
+  String _getFullMonthName(String abbr) {
+    switch (abbr.toLowerCase()) {
+      case 'jan': return 'Januari';
+      case 'feb': return 'Februari';
+      case 'mar': return 'Maret';
+      case 'apr': return 'April';
+      case 'mei': return 'Mei';
+      case 'jun': return 'Juni';
+      case 'jul': return 'Juli';
+      case 'ags': return 'Agustus';
+      case 'sep': return 'September';
+      case 'okt': return 'Oktober';
+      case 'nov': return 'November';
+      case 'des': return 'Desember';
+      default: return abbr;
+    }
+  }
+
+  int _getMonthIndex(String name) {
+    switch (name.toLowerCase()) {
+      case 'januari': case 'jan': return 1;
+      case 'februari': case 'feb': return 2;
+      case 'maret': case 'mar': return 3;
+      case 'april': case 'apr': return 4;
+      case 'mei': case 'may': return 5;
+      case 'juni': case 'jun': return 6;
+      case 'juli': case 'jul': return 7;
+      case 'agustus': case 'ags': case 'agu': return 8;
+      case 'september': case 'sep': return 9;
+      case 'oktober': case 'okt': return 10;
+      case 'november': case 'nov': return 11;
+      case 'desember': case 'des': return 12;
+      default: return 0;
+    }
+  }
+
+  List<BalasLogModel> get filteredReplyLogs {
+    if (selectedMonth.value.isEmpty) {
+      return replyLogs;
+    }
+    return replyLogs.where((log) {
+      final parts = log.date.split(' ');
+      if (parts.length < 3) return false;
+      final logMonthName = parts[1].toLowerCase();
+      final logYear = parts[2];
+      
+      final monthParts = selectedMonth.value.split(' ');
+      if (monthParts.length < 2) return false;
+      final selectedMonthName = monthParts[0].toLowerCase();
+      final selectedYear = monthParts[1];
+      
+      if (logYear != selectedYear) return false;
+      
+      final monthMap = {
+        'jan': ['jan', 'januari', 'january'],
+        'feb': ['feb', 'februari', 'february'],
+        'mar': ['mar', 'maret', 'march'],
+        'apr': ['apr', 'april'],
+        'mei': ['mei', 'may'],
+        'jun': ['jun', 'juni', 'june'],
+        'jul': ['jul', 'juli', 'july'],
+        'ags': ['ags', 'agu', 'agustus', 'august'],
+        'sep': ['sep', 'september'],
+        'okt': ['okt', 'oktober', 'october'],
+        'nov': ['nov', 'november'],
+        'des': ['des', 'desember', 'december'],
+      };
+      
+      final matchedList = monthMap[logMonthName] ?? [logMonthName];
+      return matchedList.contains(selectedMonthName);
+    }).toList();
   }
 
   Future<void> exportPdfReport() async {
@@ -154,25 +287,147 @@ class BalasController extends GetxController {
 
     isExporting.value = true;
 
-    // Simulate generation delay
-    await Future.delayed(const Duration(milliseconds: 1500));
+    try {
+      final pdf = pw.Document();
+      final items = filteredReplyLogs;
 
-    isExporting.value = false;
+      final primaryColor = PdfColor.fromHex('#6366F1'); // Indigo
+      final darkColor = PdfColor.fromHex('#1E222B');
+      final greyColor = PdfColor.fromHex('#9CA3AF');
 
-    Get.snackbar(
-      'Export Berhasil',
-      'Laporan log balasan untuk bulan ${selectedMonth.value} berhasil diunduh sebagai PDF.',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Get.isDarkMode
-          ? const Color(0xFF1E222B)
-          : Colors.white.withOpacity(0.95),
-      colorText: Get.isDarkMode ? Colors.white : Colors.black,
-      borderWidth: 1,
-      borderColor: Get.isDarkMode
-          ? const Color(0xFF2E3440)
-          : Colors.grey.shade200,
-      duration: const Duration(seconds: 3),
-    );
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(32),
+          build: (context) => [
+            pw.Header(
+              level: 0,
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(
+                        'RSUD dr. Soebandi - Pusat Balasan',
+                        style: pw.TextStyle(
+                          fontSize: 18,
+                          fontWeight: pw.FontWeight.bold,
+                          color: primaryColor,
+                        ),
+                      ),
+                      pw.Text(
+                        'Laporan Audit Log Balasan Google Maps Review',
+                        style: pw.TextStyle(
+                          fontSize: 10,
+                          color: greyColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  pw.Text(
+                    'Periode: ${selectedMonth.value}',
+                    style: pw.TextStyle(
+                      fontSize: 11,
+                      fontWeight: pw.FontWeight.bold,
+                      color: darkColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            pw.SizedBox(height: 16),
+            
+            // Stats summary row
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text(
+                  'Total Ulasan Periode Ini: ${items.length}',
+                  style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+                ),
+                pw.Text(
+                  'Terkirim: ${items.where((i) => i.status.value == 'terkirim').length} | Pending: ${items.where((i) => i.status.value != 'terkirim').length}',
+                  style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+                ),
+              ],
+            ),
+            pw.SizedBox(height: 16),
+
+            // Table of logs
+            pw.TableHelper.fromTextArray(
+              headers: ['Tanggal', 'User Pengguna', 'Rating', 'Ulasan Pengguna', 'Balasan Admin', 'Status'],
+              data: List<List<String>>.generate(items.length, (index) {
+                final item = items[index];
+                return [
+                  item.date,
+                  item.reviewerName,
+                  '${item.rating.toInt()}★',
+                  item.reviewText,
+                  item.adminReply.value.isEmpty ? 'Belum ditanggapi' : item.adminReply.value,
+                  item.status.value.toUpperCase(),
+                ];
+              }),
+              headerStyle: pw.TextStyle(
+                color: PdfColors.white,
+                fontWeight: pw.FontWeight.bold,
+                fontSize: 9,
+              ),
+              headerDecoration: pw.BoxDecoration(
+                color: primaryColor,
+              ),
+              cellStyle: const pw.TextStyle(
+                fontSize: 8,
+              ),
+              cellAlignment: pw.Alignment.centerLeft,
+              cellAlignments: {
+                2: pw.Alignment.center,
+                5: pw.Alignment.center,
+              },
+            ),
+          ],
+        ),
+      );
+
+      // Write to Downloads directory
+      String downloadsDir = '.';
+      if (Platform.isWindows) {
+        final userProfile = Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'] ?? '';
+        if (userProfile.isNotEmpty) {
+          downloadsDir = '$userProfile\\Downloads';
+        }
+      }
+      
+      final fileName = 'Laporan_Log_Balasan_${selectedMonth.value.replaceAll(' ', '_')}.pdf';
+      final file = File('$downloadsDir\\$fileName');
+      await file.writeAsBytes(await pdf.save());
+
+      Get.snackbar(
+        'Export Berhasil',
+        'Laporan log balasan berhasil disimpan ke folder Downloads:\n$fileName',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.isDarkMode
+            ? const Color(0xFF1E222B)
+            : Colors.white.withOpacity(0.95),
+        colorText: Get.isDarkMode ? Colors.white : Colors.black,
+        borderWidth: 1,
+        borderColor: Get.isDarkMode
+            ? const Color(0xFF2E3440)
+            : Colors.grey.shade200,
+        duration: const Duration(seconds: 5),
+      );
+    } catch (e) {
+      print('Export PDF Error: $e');
+      Get.snackbar(
+        'Export Gagal',
+        'Terjadi kesalahan saat menyimpan PDF: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade50,
+        colorText: Colors.red.shade900,
+      );
+    } finally {
+      isExporting.value = false;
+    }
   }
 
   void changeMonth(String month) {
@@ -199,3 +454,5 @@ class BalasController extends GetxController {
     }
   }
 }
+
+

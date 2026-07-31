@@ -177,11 +177,24 @@ class DahsboardController extends GetxController {
     return double.parse(((posCount / reviews.length) * 100).toStringAsFixed(0));
   }
 
-  double get responseRate {
-    if (stats.value != null) return stats.value!.responseRatePercentage;
-    if (reviews.isEmpty) return 0.0;
-    final answered = reviews.where((r) => r.replyText.value.isNotEmpty).length;
-    return double.parse(((answered / reviews.length) * 100).toStringAsFixed(0));
+  double get positiveVibesTrendPercentage {
+    if (stats.value != null) return stats.value!.positiveVibesTrendPercentage;
+    return 12.0;
+  }
+
+  double get avgResponseHours {
+    if (stats.value != null) return stats.value!.avgResponseHours;
+    return 2.4;
+  }
+
+  int get responseTargetDifferenceMinutes {
+    if (stats.value != null) return stats.value!.responseTargetDifferenceMinutes;
+    return -18;
+  }
+
+  int get pendingCount {
+    if (stats.value != null) return stats.value!.pendingCount;
+    return 0;
   }
 
   // Toggle or Set Filters
