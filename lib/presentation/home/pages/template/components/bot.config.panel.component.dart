@@ -18,7 +18,7 @@ class BotConfigPanel extends GetView<TemplateController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Header Row: Title & Active Toggle
+            // Header Row: Title & Status Badge
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -35,7 +35,7 @@ class BotConfigPanel extends GetView<TemplateController> {
                           ),
                           const SizedBox(width: 8),
                           const Text(
-                            'Bot Integration Hub',
+                            'Bot Status Monitoring',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -46,7 +46,7 @@ class BotConfigPanel extends GetView<TemplateController> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Konfigurasi token dan webhook untuk bot balasan otomatis Anda.',
+                        'Pantau status operasional dan aktivitas real-time bot balasan otomatis Anda.',
                         style: TextStyle(
                           fontSize: 11,
                           color: Colors.grey.shade500,
@@ -57,30 +57,38 @@ class BotConfigPanel extends GetView<TemplateController> {
                 ),
                 Obx(() {
                   final isActive = controller.botActiveStatus.value;
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Pulsing Status Dot
-                      _StatusIndicatorDot(isActive: isActive),
-                      const SizedBox(width: 8),
-                      Text(
-                        isActive ? 'BOT ACTIVE' : 'BOT INACTIVE',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: isActive
-                              ? const Color(0xFF10B981)
-                              : Colors.grey.shade500,
-                          letterSpacing: 0.5,
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isActive
+                          ? const Color(0xFF10B981).withOpacity(0.1)
+                          : Colors.grey.shade500.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isActive
+                            ? const Color(0xFF10B981).withOpacity(0.3)
+                            : Colors.grey.shade500.withOpacity(0.3),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Pulsing Status Dot
+                        _StatusIndicatorDot(isActive: isActive),
+                        const SizedBox(width: 8),
+                        Text(
+                          isActive ? 'BOT ACTIVE' : 'BOT INACTIVE',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: isActive
+                                ? const Color(0xFF10B981)
+                                : Colors.grey.shade500,
+                            letterSpacing: 0.5,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Switch.adaptive(
-                        value: isActive,
-                        onChanged: (value) => controller.toggleBotStatus(),
-                        activeColor: const Color(0xFF10B981),
-                      ),
-                    ],
+                      ],
+                    ),
                   );
                 }),
               ],
@@ -94,13 +102,13 @@ class BotConfigPanel extends GetView<TemplateController> {
             // Config Inputs: Webhook URL & Secret Token
             LayoutBuilder(
               builder: (context, constraints) {
-                final isWide = constraints.maxWidth > 600;
+                final isWide = constraints.maxWidth > 800;
 
-                final webhookField = Column(
+                final statusMessageField = Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Message',
+                      'STATUS MESSAGE',
                       style: TextStyle(
                         fontSize: 9,
                         fontWeight: FontWeight.bold,
@@ -112,20 +120,20 @@ class BotConfigPanel extends GetView<TemplateController> {
                     Obx(
                       () => _buildCopyableField(
                         context,
-                        text: controller.webhookUrl.value,
+                        text: controller.botStatusMessage.value,
                         isDark: isDark,
                         theme: theme,
-                        label: 'Message',
+                        label: 'Status Message',
                       ),
                     ),
                   ],
                 );
 
-                final tokenField = Column(
+                final lastCheckedField = Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Time Last Checked',
+                      'LAST CHECKED TIME',
                       style: TextStyle(
                         fontSize: 9,
                         fontWeight: FontWeight.bold,
@@ -137,11 +145,35 @@ class BotConfigPanel extends GetView<TemplateController> {
                     Obx(
                       () => _buildCopyableField(
                         context,
-                        text: controller.secretToken.value,
+                        text: controller.lastCheckedTime.value,
                         isDark: isDark,
                         theme: theme,
-                        label: 'Time Last Checked',
-                        obscure: true,
+                        label: 'Last Checked Time',
+                      ),
+                    ),
+                  ],
+                );
+
+                final totalRepliedField = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'TOTAL AUTO REPLIES',
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey.shade500,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Obx(
+                      () => _buildCopyableField(
+                        context,
+                        text: '${controller.totalAutoRepliedCount.value} ulasan',
+                        isDark: isDark,
+                        theme: theme,
+                        label: 'Total Auto Replies',
                       ),
                     ),
                   ],
@@ -151,18 +183,22 @@ class BotConfigPanel extends GetView<TemplateController> {
                   return Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(flex: 3, child: webhookField),
+                      Expanded(flex: 3, child: statusMessageField),
                       const SizedBox(width: 16),
-                      Expanded(flex: 2, child: tokenField),
+                      Expanded(flex: 2, child: lastCheckedField),
+                      const SizedBox(width: 16),
+                      Expanded(flex: 2, child: totalRepliedField),
                     ],
                   );
                 } else {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      webhookField,
+                      statusMessageField,
                       const SizedBox(height: 16),
-                      tokenField,
+                      lastCheckedField,
+                      const SizedBox(height: 16),
+                      totalRepliedField,
                     ],
                   );
                 }

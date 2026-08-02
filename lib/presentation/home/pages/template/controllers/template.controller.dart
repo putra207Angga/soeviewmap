@@ -34,8 +34,9 @@ class CustomTemplate {
 class TemplateController extends GetxController {
   // Bot connection and configurations
   final botActiveStatus = true.obs;
-  final webhookUrl = 'https://api.soebandibot.xyz/v1/google-maps/webhook'.obs;
-  final secretToken = 'sb_sec_99182x_gtx_z'.obs;
+  final botStatusMessage = 'Menghubungkan ke bot...'.obs;
+  final lastCheckedTime = '-'.obs;
+  final totalAutoRepliedCount = 0.obs;
 
   // Star templates configuration
   final starTemplates = <int, String>{}.obs;
@@ -56,12 +57,25 @@ class TemplateController extends GetxController {
     try {
       final response = await BotDao.use.getStatus();
       if (response.statusCode == 200 && response.body != null) {
-        botActiveStatus.value = response.body!.botStatus != "ERROR";
-        webhookUrl.value = response.body!.errorMessage;
-        secretToken.value = response.body!.lastCheckedAt.toIso8601String();
+        final bot = response.body!;
+        botActiveStatus.value = bot.botStatus.toUpperCase() == "ACTIVE";
+        botStatusMessage.value = bot.errorMessage.isNotEmpty 
+            ? bot.errorMessage 
+            : "Semua sistem berjalan normal.";
+        
+        final time = bot.lastCheckedAt;
+        lastCheckedTime.value = "${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')} "
+            "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}";
+        
+        totalAutoRepliedCount.value = bot.totalAutoReplied;
+      } else {
+        botActiveStatus.value = false;
+        botStatusMessage.value = "Gagal memuat status bot dari server.";
       }
     } catch (e) {
-      print('ReviewController fetchStats error: $e');
+      print('TemplateController fetchBost error: $e');
+      botActiveStatus.value = false;
+      botStatusMessage.value = "Error koneksi: $e";
     }
   }
 

@@ -14,57 +14,65 @@ class ReviewTableComponent extends GetView<ReviewController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // 1. Table Header & Content (with horizontal scrolling on small viewports)
+          // 1. Table Header & Content (responsive width based on constraints)
           Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SizedBox(
-                width:
-                    900, // Fixed width inside scrollable view to keep table columns proportional
-                child: Column(
-                  children: [
-                    // Table Header Row
-                    _buildTableHeaderRow(isDark),
-                    Divider(
-                      height: 1,
-                      color: isDark
-                          ? const Color(0xFF2E3440)
-                          : Colors.grey.shade200,
-                    ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // Stretch to fill card if constraints allow, minimum width 900
+                final tableWidth = constraints.maxWidth > 900
+                    ? constraints.maxWidth
+                    : 900.0;
 
-                    // Table Rows
-                    Expanded(
-                      child: Obx(() {
-                        if (controller.isLoading.value) {
-                          return _buildLoadingState(isDark);
-                        }
-                        final items = controller.paginatedReviews;
-                        if (items.isEmpty) {
-                          return _buildEmptyState(isDark);
-                        }
-                        return ListView.separated(
-                          itemCount: items.length,
-                          separatorBuilder: (context, index) => Divider(
-                            height: 1,
-                            color: isDark
-                                ? const Color(0xFF2E3440).withOpacity(0.5)
-                                : Colors.grey.shade100,
-                          ),
-                          itemBuilder: (context, index) {
-                            final review = items[index];
-                            return _buildReviewRow(
-                              context,
-                              review,
-                              isDark,
-                              theme,
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: SizedBox(
+                    width: tableWidth,
+                    child: Column(
+                      children: [
+                        // Table Header Row
+                        _buildTableHeaderRow(isDark),
+                        Divider(
+                          height: 1,
+                          color: isDark
+                              ? const Color(0xFF2E3440)
+                              : Colors.grey.shade200,
+                        ),
+
+                        // Table Rows
+                        Expanded(
+                          child: Obx(() {
+                            if (controller.isLoading.value) {
+                              return _buildLoadingState(isDark);
+                            }
+                            final items = controller.paginatedReviews;
+                            if (items.isEmpty) {
+                              return _buildEmptyState(isDark);
+                            }
+                            return ListView.separated(
+                              itemCount: items.length,
+                              separatorBuilder: (context, index) => Divider(
+                                height: 1,
+                                color: isDark
+                                    ? const Color(0xFF2E3440).withOpacity(0.5)
+                                    : Colors.grey.shade100,
+                              ),
+                              itemBuilder: (context, index) {
+                                final review = items[index];
+                                return _buildReviewRow(
+                                  context,
+                                  review,
+                                  isDark,
+                                  theme,
+                                );
+                              },
                             );
-                          },
-                        );
-                      }),
+                          }),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
           ),
 

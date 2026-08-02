@@ -46,53 +46,62 @@ class BalasTableComponent extends GetView<BalasController> {
             color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
           ),
 
-          // 2. Scrollable Spreadsheet Table
+          // 2. Scrollable Spreadsheet Table (responsive width based on constraints)
           Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SizedBox(
-                width: 950, // Proportional width for table columns
-                child: Column(
-                  children: [
-                    _buildTableHeaderRow(isDark),
-                    Divider(
-                      height: 1,
-                      color: isDark
-                          ? const Color(0xFF2E3440)
-                          : Colors.grey.shade200,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // Stretch to fill card if constraints allow, minimum width 950
+                final tableWidth = constraints.maxWidth > 950
+                    ? constraints.maxWidth
+                    : 950.0;
+
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: SizedBox(
+                    width: tableWidth,
+                    child: Column(
+                      children: [
+                        _buildTableHeaderRow(isDark),
+                        Divider(
+                          height: 1,
+                          color: isDark
+                              ? const Color(0xFF2E3440)
+                              : Colors.grey.shade200,
+                        ),
+                        Expanded(
+                          child: Obx(() {
+                            if (controller.isLoading.value && controller.replyLogs.isEmpty) {
+                              return const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 40),
+                                  child: CircularProgressIndicator(),
+                                ),
+                              );
+                            }
+                            final items = controller.filteredReplyLogs;
+                            if (items.isEmpty) {
+                              return _buildEmptyState(isDark);
+                            }
+                            return ListView.separated(
+                              itemCount: items.length,
+                              separatorBuilder: (context, index) => Divider(
+                                height: 1,
+                                color: isDark
+                                    ? const Color(0xFF2E3440).withOpacity(0.5)
+                                    : Colors.grey.shade100,
+                              ),
+                              itemBuilder: (context, index) {
+                                final log = items[index];
+                                return _buildLogRow(context, log, isDark, theme);
+                              },
+                            );
+                          }),
+                        ),
+                      ],
                     ),
-                    Expanded(
-                      child: Obx(() {
-                        if (controller.isLoading.value && controller.replyLogs.isEmpty) {
-                          return const Center(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(vertical: 40),
-                              child: CircularProgressIndicator(),
-                            ),
-                          );
-                        }
-                        final items = controller.filteredReplyLogs;
-                        if (items.isEmpty) {
-                          return _buildEmptyState(isDark);
-                        }
-                        return ListView.separated(
-                          itemCount: items.length,
-                          separatorBuilder: (context, index) => Divider(
-                            height: 1,
-                            color: isDark
-                                ? const Color(0xFF2E3440).withOpacity(0.5)
-                                : Colors.grey.shade100,
-                          ),
-                          itemBuilder: (context, index) {
-                            final log = items[index];
-                            return _buildLogRow(context, log, isDark, theme);
-                          },
-                        );
-                      }),
-                    ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
           ),
         ],

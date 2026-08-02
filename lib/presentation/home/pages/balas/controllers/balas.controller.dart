@@ -291,6 +291,11 @@ class BalasController extends GetxController {
       final pdf = pw.Document();
       final items = filteredReplyLogs;
 
+      // Load Jember logo image from assets
+      final ByteData logoData = await rootBundle.load('assets/images/logo_jember.png');
+      final Uint8List logoBytes = logoData.buffer.asUint8List();
+      final pw.MemoryImage logoImage = pw.MemoryImage(logoBytes);
+
       final primaryColor = PdfColor.fromHex('#6366F1'); // Indigo
       final darkColor = PdfColor.fromHex('#1E222B');
       final greyColor = PdfColor.fromHex('#9CA3AF');
@@ -299,62 +304,203 @@ class BalasController extends GetxController {
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
           margin: const pw.EdgeInsets.all(32),
+          footer: (context) => pw.Container(
+            alignment: pw.Alignment.centerRight,
+            margin: const pw.EdgeInsets.only(top: 10),
+            child: pw.Text(
+              'Halaman ${context.pageNumber} dari ${context.pagesCount}',
+              style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
+            ),
+          ),
           build: (context) => [
-            pw.Header(
-              level: 0,
-              child: pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            // 1. Kop Surat (Official Indonesian Letterhead replica from reference)
+            pw.Column(
+              children: [
+                pw.Row(
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
+                  children: [
+                    // Official Jember Logo image aligned to left
+                    pw.Image(
+                      logoImage,
+                      width: 45,
+                      height: 55,
+                      fit: pw.BoxFit.contain,
+                    ),
+                    pw.SizedBox(width: 14),
+                    // Centered Text Blocks matching official header text hierarchy
+                    pw.Expanded(
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.center,
+                        mainAxisAlignment: pw.MainAxisAlignment.center,
+                        children: [
+                          pw.Text(
+                            'PEMERINTAH KABUPATEN JEMBER',
+                            style: pw.TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: pw.FontWeight.bold,
+                              color: PdfColors.black,
+                            ),
+                          ),
+                          pw.Text(
+                            'DINAS KESEHATAN, PENGENDALIAN PENDUDUK',
+                            style: pw.TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: pw.FontWeight.bold,
+                              color: PdfColors.black,
+                            ),
+                          ),
+                          pw.Text(
+                            'DAN KELUARGA BERENCANA',
+                            style: pw.TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: pw.FontWeight.bold,
+                              color: PdfColors.black,
+                            ),
+                          ),
+                          pw.Text(
+                            'RUMAH SAKIT DAERAH dr.SOEBANDI',
+                            style: pw.TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: pw.FontWeight.bold,
+                              color: PdfColors.black,
+                            ),
+                          ),
+                          pw.Text(
+                            'Jl. dr.Soebandi 124 telp. 0331-487441-422404 pswt 138 Fax. 487564',
+                            style: const pw.TextStyle(
+                              fontSize: 7.5,
+                              color: PdfColors.black,
+                            ),
+                          ),
+                          pw.Text(
+                            'JEMBER 68111',
+                            style: pw.TextStyle(
+                              fontSize: 8.5,
+                              fontWeight: pw.FontWeight.bold,
+                              color: PdfColors.black,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Right spacer to offset the left logo width and keep the text perfectly centered on page
+                    pw.SizedBox(width: 59), // 45 (logo width) + 14 (sizedbox) = 59
+                  ],
+                ),
+                pw.SizedBox(height: 6),
+                // Thick solid horizontal separator matching the reference document line
+                pw.Container(
+                  height: 2.2,
+                  color: PdfColors.black,
+                ),
+              ],
+            ),
+            pw.SizedBox(height: 16),
+
+            // 2. Document Title
+            pw.Center(
+              child: pw.Column(
                 children: [
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text(
-                        'RSUD dr. Soebandi - Pusat Balasan',
-                        style: pw.TextStyle(
-                          fontSize: 18,
-                          fontWeight: pw.FontWeight.bold,
-                          color: primaryColor,
-                        ),
-                      ),
-                      pw.Text(
-                        'Laporan Audit Log Balasan Google Maps Review',
-                        style: pw.TextStyle(
-                          fontSize: 10,
-                          color: greyColor,
-                        ),
-                      ),
-                    ],
-                  ),
                   pw.Text(
-                    'Periode: ${selectedMonth.value}',
+                    'LAPORAN AUDIT LOG BALASAN',
                     style: pw.TextStyle(
-                      fontSize: 11,
+                      fontSize: 12,
                       fontWeight: pw.FontWeight.bold,
                       color: darkColor,
+                    ),
+                  ),
+                  pw.Text(
+                    'Google Maps Review - Periode ${selectedMonth.value}',
+                    style: pw.TextStyle(
+                      fontSize: 9,
+                      fontWeight: pw.FontWeight.bold,
+                      color: greyColor,
                     ),
                   ),
                 ],
               ),
             ),
             pw.SizedBox(height: 16),
-            
-            // Stats summary row
+
+            // 3. Stats Summary Cards Row
             pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
-                pw.Text(
-                  'Total Ulasan Periode Ini: ${items.length}',
-                  style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+                pw.Expanded(
+                  child: pw.Container(
+                    padding: const pw.EdgeInsets.all(8),
+                    decoration: const pw.BoxDecoration(
+                      color: PdfColors.grey100,
+                      borderRadius: pw.BorderRadius.all(pw.Radius.circular(6)),
+                    ),
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text(
+                          'TOTAL ULASAN',
+                          style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey600),
+                        ),
+                        pw.SizedBox(height: 2),
+                        pw.Text(
+                          '${items.length} Review',
+                          style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: darkColor),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                pw.Text(
-                  'Terkirim: ${items.where((i) => i.status.value == 'terkirim').length} | Pending: ${items.where((i) => i.status.value != 'terkirim').length}',
-                  style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+                pw.SizedBox(width: 12),
+                pw.Expanded(
+                  child: pw.Container(
+                    padding: const pw.EdgeInsets.all(8),
+                    decoration: pw.BoxDecoration(
+                      color: PdfColor.fromHex('#E6F4EA'),
+                      borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+                    ),
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text(
+                          'TERKIRIM',
+                          style: pw.TextStyle(fontSize: 7, color: PdfColor.fromHex('#137333')),
+                        ),
+                        pw.SizedBox(height: 2),
+                        pw.Text(
+                          '${items.where((i) => i.status.value == 'terkirim').length} Dibalas',
+                          style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: PdfColor.fromHex('#137333')),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                pw.SizedBox(width: 12),
+                pw.Expanded(
+                  child: pw.Container(
+                    padding: const pw.EdgeInsets.all(8),
+                    decoration: pw.BoxDecoration(
+                      color: PdfColor.fromHex('#FCE8E6'),
+                      borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+                    ),
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text(
+                          'PENDING',
+                          style: pw.TextStyle(fontSize: 7, color: PdfColor.fromHex('#C5221F')),
+                        ),
+                        pw.SizedBox(height: 2),
+                        pw.Text(
+                          '${items.where((i) => i.status.value != 'terkirim').length} Ulasan',
+                          style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: PdfColor.fromHex('#C5221F')),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
             pw.SizedBox(height: 16),
 
-            // Table of logs
+            // 4. Table of logs with proportional column widths and top-left cell alignment
             pw.TableHelper.fromTextArray(
               headers: ['Tanggal', 'User Pengguna', 'Rating', 'Ulasan Pengguna', 'Balasan Admin', 'Status'],
               data: List<List<String>>.generate(items.length, (index) {
@@ -363,44 +509,55 @@ class BalasController extends GetxController {
                   item.date,
                   item.reviewerName,
                   '${item.rating.toInt()}★',
-                  item.reviewText,
+                  item.reviewText.isEmpty ? '-' : item.reviewText,
                   item.adminReply.value.isEmpty ? 'Belum ditanggapi' : item.adminReply.value,
                   item.status.value.toUpperCase(),
                 ];
               }),
+              columnWidths: {
+                0: const pw.FixedColumnWidth(60),  // Tanggal
+                1: const pw.FixedColumnWidth(80),  // User Pengguna
+                2: const pw.FixedColumnWidth(35),  // Rating
+                3: const pw.FlexColumnWidth(2.5),  // Ulasan Pengguna
+                4: const pw.FlexColumnWidth(3.5),  // Balasan Admin
+                5: const pw.FixedColumnWidth(55),  // Status
+              },
               headerStyle: pw.TextStyle(
                 color: PdfColors.white,
                 fontWeight: pw.FontWeight.bold,
-                fontSize: 9,
+                fontSize: 8.5,
               ),
               headerDecoration: pw.BoxDecoration(
                 color: primaryColor,
               ),
               cellStyle: const pw.TextStyle(
-                fontSize: 8,
+                fontSize: 7.5,
               ),
-              cellAlignment: pw.Alignment.centerLeft,
+              cellPadding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+              cellAlignment: pw.Alignment.topLeft,
               cellAlignments: {
-                2: pw.Alignment.center,
-                5: pw.Alignment.center,
+                0: pw.Alignment.topLeft,
+                1: pw.Alignment.topLeft,
+                2: pw.Alignment.topCenter,
+                3: pw.Alignment.topLeft,
+                4: pw.Alignment.topLeft,
+                5: pw.Alignment.topCenter,
               },
+              border: pw.TableBorder(
+                horizontalInside: const pw.BorderSide(color: PdfColors.grey200, width: 0.5),
+                verticalInside: pw.BorderSide.none,
+                bottom: const pw.BorderSide(color: PdfColors.grey300, width: 0.5),
+                top: pw.BorderSide.none,
+                left: pw.BorderSide.none,
+                right: pw.BorderSide.none,
+              ),
             ),
           ],
         ),
       );
 
-      // Write to Downloads directory
-      String downloadsDir = '.';
-      if (Platform.isWindows) {
-        final userProfile = Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'] ?? '';
-        if (userProfile.isNotEmpty) {
-          downloadsDir = '$userProfile\\Downloads';
-        }
-      }
-      
       final fileName = 'Laporan_Log_Balasan_${selectedMonth.value.replaceAll(' ', '_')}.pdf';
-      final file = File('$downloadsDir\\$fileName');
-      await file.writeAsBytes(await pdf.save());
+      await saveAndDownloadFile(await pdf.save(), fileName);
 
       Get.snackbar(
         'Export Berhasil',
