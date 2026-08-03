@@ -23,7 +23,7 @@ class LogBotFiltersPanel extends GetView<LogBotController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Log Bot',
+                'nav_log_bot'.tr,
                 style: TextStyle(
                   fontSize: context.width > 600 ? 28 : 22,
                   fontWeight: FontWeight.w900,
@@ -33,7 +33,7 @@ class LogBotFiltersPanel extends GetView<LogBotController> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Audit log aktivitas sinkronisasi dan auto-reply ulasan Google Maps',
+                'log_bot_subtitle'.tr,
                 style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
               ),
             ],

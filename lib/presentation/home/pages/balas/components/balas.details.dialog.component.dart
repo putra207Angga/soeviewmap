@@ -19,7 +19,10 @@ class BalasDetailsDialog extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: Container(
-          width: 500,
+          constraints: BoxConstraints(
+            maxWidth: 500,
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+          ),
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
@@ -63,6 +66,12 @@ class BalasDetailsDialog extends StatelessWidget {
                 color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
               ),
               const SizedBox(height: 12),
+              Flexible(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
 
               // 1. User & Review Info
               Row(
@@ -202,8 +211,12 @@ class BalasDetailsDialog extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
+    ],
+  ),
+),
+),
+);
+}
 }
 
 class UserProfileDialog extends StatelessWidget {

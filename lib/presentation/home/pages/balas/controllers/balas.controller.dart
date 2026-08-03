@@ -291,10 +291,25 @@ class BalasController extends GetxController {
       final pdf = pw.Document();
       final items = filteredReplyLogs;
 
-      // Load Jember logo image from assets
-      final ByteData logoData = await rootBundle.load('assets/images/logo_jember.png');
-      final Uint8List logoBytes = logoData.buffer.asUint8List();
-      final pw.MemoryImage logoImage = pw.MemoryImage(logoBytes);
+      // Load Jember logo image from assets safely with exact buffer bounds
+      pw.Widget logoWidget;
+      try {
+        final ByteData logoData = await rootBundle.load('assets/images/logo_jember.png');
+        final Uint8List logoBytes = logoData.buffer.asUint8List(
+          logoData.offsetInBytes,
+          logoData.lengthInBytes,
+        );
+        final pw.MemoryImage logoImage = pw.MemoryImage(logoBytes);
+        logoWidget = pw.Image(
+          logoImage,
+          width: 45,
+          height: 55,
+          fit: pw.BoxFit.contain,
+        );
+      } catch (e) {
+        print('Error loading logo for PDF: $e');
+        logoWidget = pw.SizedBox(width: 45, height: 55);
+      }
 
       final primaryColor = PdfColor.fromHex('#6366F1'); // Indigo
       final darkColor = PdfColor.fromHex('#1E222B');
@@ -320,12 +335,7 @@ class BalasController extends GetxController {
                   crossAxisAlignment: pw.CrossAxisAlignment.center,
                   children: [
                     // Official Jember Logo image aligned to left
-                    pw.Image(
-                      logoImage,
-                      width: 45,
-                      height: 55,
-                      fit: pw.BoxFit.contain,
-                    ),
+                    logoWidget,
                     pw.SizedBox(width: 14),
                     // Centered Text Blocks matching official header text hierarchy
                     pw.Expanded(
@@ -506,18 +516,18 @@ class BalasController extends GetxController {
               data: List<List<String>>.generate(items.length, (index) {
                 final item = items[index];
                 return [
-                  item.date,
-                  item.reviewerName,
-                  '${item.rating.toInt()}★',
-                  item.reviewText.isEmpty ? '-' : item.reviewText,
-                  item.adminReply.value.isEmpty ? 'Belum ditanggapi' : item.adminReply.value,
-                  item.status.value.toUpperCase(),
+                  _cleanPdfText(item.date),
+                  _cleanPdfText(item.reviewerName),
+                  '${item.rating.toInt()} / 5',
+                  item.reviewText.isEmpty ? '-' : _cleanPdfText(item.reviewText),
+                  item.adminReply.value.isEmpty ? 'Belum ditanggapi' : _cleanPdfText(item.adminReply.value),
+                  _cleanPdfText(item.status.value.toUpperCase()),
                 ];
               }),
               columnWidths: {
                 0: const pw.FixedColumnWidth(60),  // Tanggal
                 1: const pw.FixedColumnWidth(80),  // User Pengguna
-                2: const pw.FixedColumnWidth(35),  // Rating
+                2: const pw.FixedColumnWidth(48),  // Rating
                 3: const pw.FlexColumnWidth(2.5),  // Ulasan Pengguna
                 4: const pw.FlexColumnWidth(3.5),  // Balasan Admin
                 5: const pw.FixedColumnWidth(55),  // Status
@@ -609,6 +619,25 @@ class BalasController extends GetxController {
       replyLogs[idx].status.value = 'pending';
       replyLogs.refresh();
     }
+  }
+
+  String _cleanPdfText(String input) {
+    if (input.isEmpty) return input;
+    String text = input
+        .replaceAll('📞', '')
+        .replaceAll('✉️', '')
+        .replaceAll('✉', '')
+        .replaceAll('📍', '')
+        .replaceAll('★', ' Bintang')
+        .replaceAll('⭐', ' Bintang');
+
+    final StringBuffer buffer = StringBuffer();
+    for (final char in text.runes) {
+      if (char <= 255 || char == 10 || char == 13) {
+        buffer.writeCharCode(char);
+      }
+    }
+    return buffer.toString().trim();
   }
 }
 

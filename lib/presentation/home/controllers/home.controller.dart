@@ -19,6 +19,7 @@ class HomeController extends GetxController {
   final isFilterProfanity = true.obs;
   final isDarkMode = false.obs;
   final notificationLimit = 50.obs;
+  final selectedLanguage = 'id_ID'.obs;
 
   @override
   void onInit() {
@@ -48,6 +49,8 @@ class HomeController extends GetxController {
           SecureStorageServices.to.read('settings_notification_limit') ?? '50',
         ) ??
         50;
+    selectedLanguage.value =
+        SecureStorageServices.to.read('settings_app_language') ?? 'id_ID';
   }
 
   Future<void> fetchUserProfile() async {
@@ -228,6 +231,8 @@ class HomeController extends GetxController {
       'settings_notification_limit',
       notificationLimit.value.toString(),
     );
+    // Save & apply language change
+    TranslationService.changeLanguage(selectedLanguage.value);
 
     // Apply theme change
     Get.changeThemeMode(isDarkMode.value ? ThemeMode.dark : ThemeMode.light);
@@ -237,8 +242,8 @@ class HomeController extends GetxController {
 
     Get.back();
     Get.snackbar(
-      'Berhasil Disimpan',
-      'Seluruh konfigurasi settings berhasil disimpan.',
+      'save_settings'.tr,
+      'language_changed'.tr,
       snackPosition: SnackPosition.BOTTOM,
       backgroundColor: Colors.green.shade50,
       colorText: Colors.green.shade900,

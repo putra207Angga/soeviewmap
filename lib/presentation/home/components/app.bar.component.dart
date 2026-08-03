@@ -20,10 +20,11 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
             return items;
           }
           return items.where((option) {
-            return option.label.toLowerCase().contains(text.text.toLowerCase());
+            return option.translatedLabel.toLowerCase().contains(text.text.toLowerCase()) ||
+                option.label.toLowerCase().contains(text.text.toLowerCase());
           });
         },
-        displayStringForOption: (option) => option.label,
+        displayStringForOption: (option) => option.translatedLabel,
         onSelected: (value) => controller.toNavigation(value.index),
         optionsViewBuilder: (context, onSelected, options) => Material(
           elevation: 8,
@@ -41,7 +42,7 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
             itemBuilder: (context, index) {
               final option = options.elementAt(index);
               return ListTile(
-                title: Text(option.label),
+                title: Text(option.translatedLabel),
                 onTap: () => onSelected(option),
               );
             },
@@ -54,7 +55,7 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
                   controller: textEditingController,
                   onEditingComplete: onFieldSubmitted,
                   decoration: InputDecoration(
-                    hintText: 'Cari menu...',
+                    hintText: 'search_menu'.tr,
                     prefixIcon: const Icon(Icons.search),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(24),
@@ -238,19 +239,17 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
             ];
           },
         ),
-        const SizedBox(width: 4),
-        if (!context.isTablet) ...{
-          Builder(
-            builder: (context) => IconButton(
-              icon: Icon(
-                Icons.settings_outlined,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              onPressed: () => Scaffold.of(context).openEndDrawer(),
+        Builder(
+          builder: (context) => IconButton(
+            tooltip: 'settings_title'.tr,
+            icon: Icon(
+              Icons.settings_outlined,
+              color: Theme.of(context).colorScheme.primary,
             ),
+            onPressed: () => Scaffold.of(context).openEndDrawer(),
           ),
-          const SizedBox(width: 4),
-        },
+        ),
+        const SizedBox(width: 4),
       ],
     );
   }

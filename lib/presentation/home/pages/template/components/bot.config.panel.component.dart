@@ -34,12 +34,15 @@ class BotConfigPanel extends GetView<TemplateController> {
                             size: 20,
                           ),
                           const SizedBox(width: 8),
-                          const Text(
-                            'Bot Status Monitoring',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: -0.2,
+                          const Expanded(
+                            child: Text(
+                              'Bot Status Monitoring',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: -0.2,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],

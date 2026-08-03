@@ -17,7 +17,7 @@ class MobileHome extends GetView<HomeController> {
         scrolledUnderElevation: 1.5,
         title: Obx(
           () => Text(
-            controller.selectedNavIndex.value.label,
+            controller.selectedNavIndex.value.translatedLabel,
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 18,

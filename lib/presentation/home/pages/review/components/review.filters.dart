@@ -23,7 +23,7 @@ class ReviewFiltersPanel extends GetView<ReviewController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Review',
+                'nav_review'.tr,
                 style: TextStyle(
                   fontSize: context.width > 600 ? 28 : 22,
                   fontWeight: FontWeight.w900,
@@ -33,7 +33,7 @@ class ReviewFiltersPanel extends GetView<ReviewController> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Kelola dan tanggapi umpan balik pengguna secara real-time',
+                'review_subtitle'.tr,
                 style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
               ),
             ],
@@ -52,7 +52,11 @@ class ReviewFiltersPanel extends GetView<ReviewController> {
               // Time Range Dropdown
               _buildDropdown(
                 value: controller.selectedTimeRange,
-                items: ['Last 7 Days', 'Last 30 Days', 'All Time'],
+                itemMap: {
+                  'Last 7 Days': 'last_7_days'.tr,
+                  'Last 30 Days': 'last_30_days'.tr,
+                  'All Time': 'all_time'.tr,
+                },
                 isDark: isDark,
                 theme: theme,
                 onChanged: (val) => controller.filterTimeRange(val),
@@ -61,14 +65,14 @@ class ReviewFiltersPanel extends GetView<ReviewController> {
               // Ratings Dropdown
               _buildDropdown(
                 value: controller.selectedRating,
-                items: [
-                  'All Ratings',
-                  '5 Stars',
-                  '4 Stars',
-                  '3 Stars',
-                  '2 Stars',
-                  '1 Star',
-                ],
+                itemMap: {
+                  'All Ratings': 'all_ratings'.tr,
+                  '5 Stars': '5 Stars',
+                  '4 Stars': '4 Stars',
+                  '3 Stars': '3 Stars',
+                  '2 Stars': '2 Stars',
+                  '1 Star': '1 Star',
+                },
                 isDark: isDark,
                 theme: theme,
                 icon: Icons.star_border_rounded,
@@ -106,8 +110,8 @@ class ReviewFiltersPanel extends GetView<ReviewController> {
           children: ['All', 'Pending', 'Replied'].map((status) {
             final isSelected = current == status;
             final label = status == 'All'
-                ? 'All'
-                : (status == 'Pending' ? 'Pending' : 'Replied');
+                ? 'all_status'.tr
+                : (status == 'Pending' ? 'pending_status'.tr : 'replied_status'.tr);
 
             return GestureDetector(
               onTap: () => controller.filterStatus(status),
@@ -145,7 +149,7 @@ class ReviewFiltersPanel extends GetView<ReviewController> {
 
   Widget _buildDropdown({
     required RxString value,
-    required List<String> items,
+    required Map<String, String> itemMap,
     required bool isDark,
     required ThemeData theme,
     required ValueChanged<String> onChanged,
@@ -184,14 +188,14 @@ class ReviewFiltersPanel extends GetView<ReviewController> {
             onChanged: (val) {
               if (val != null) onChanged(val);
             },
-            items: items.map<DropdownMenuItem<String>>((String item) {
+            items: itemMap.entries.map<DropdownMenuItem<String>>((entry) {
               return DropdownMenuItem<String>(
-                value: item,
+                value: entry.key,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      item,
+                      entry.value,
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,

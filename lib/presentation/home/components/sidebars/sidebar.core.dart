@@ -255,7 +255,7 @@ class Sidebar extends GetView<HomeController> {
                     .map(
                       (menu) => SidebarItem(
                         icon: menu.icon,
-                        label: menu.label,
+                        label: menu.translatedLabel,
                         selected: controller.selectedNavIndex.value == menu,
                         onTap: onSelectedDestination != null
                             ? () => onSelectedDestination?.call(menu.index)

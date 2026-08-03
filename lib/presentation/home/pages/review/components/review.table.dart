@@ -101,16 +101,16 @@ class ReviewTableComponent extends GetView<ReviewController> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          SizedBox(width: 160, child: Text('Pengguna', style: headerStyle)),
-          SizedBox(width: 100, child: Text('Date', style: headerStyle)),
-          SizedBox(width: 100, child: Text('Rating', style: headerStyle)),
-          Expanded(child: Text('Ulasan', style: headerStyle)),
-          SizedBox(width: 100, child: Text('Status', style: headerStyle)),
+          SizedBox(width: 160, child: Text('reviewer'.tr, style: headerStyle)),
+          SizedBox(width: 100, child: Text('date'.tr, style: headerStyle)),
+          SizedBox(width: 100, child: Text('rating'.tr, style: headerStyle)),
+          Expanded(child: Text('nav_review'.tr, style: headerStyle)),
+          SizedBox(width: 100, child: Text('status'.tr, style: headerStyle)),
           SizedBox(
             width: 120,
             child: Align(
               alignment: Alignment.centerRight,
-              child: Text('Aksi', style: headerStyle),
+              child: Text('action'.tr, style: headerStyle),
             ),
           ),
         ],
@@ -402,8 +402,11 @@ class ReviewTableComponent extends GetView<ReviewController> {
         pageButtons.add(_buildPageNumberButton(pages, current, theme, isDark));
       }
 
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      return Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 12,
+        runSpacing: 8,
         children: [
           // Left: Showing count description
           Text(
@@ -416,30 +419,33 @@ class ReviewTableComponent extends GetView<ReviewController> {
           ),
 
           // Right: Page buttons
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Prev Button
-              _buildPaginationButton(
-                icon: Icons.keyboard_arrow_left_rounded,
-                enabled: current > 1,
-                isDark: isDark,
-                onTap: () => controller.changePage(current - 1),
-              ),
-              const SizedBox(width: 4),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Prev Button
+                _buildPaginationButton(
+                  icon: Icons.keyboard_arrow_left_rounded,
+                  enabled: current > 1,
+                  isDark: isDark,
+                  onTap: () => controller.changePage(current - 1),
+                ),
+                const SizedBox(width: 4),
 
-              // Page numbers list
-              ...pageButtons,
+                // Page numbers list
+                ...pageButtons,
 
-              const SizedBox(width: 4),
-              // Next Button
-              _buildPaginationButton(
-                icon: Icons.keyboard_arrow_right_rounded,
-                enabled: current < pages,
-                isDark: isDark,
-                onTap: () => controller.changePage(current + 1),
-              ),
-            ],
+                const SizedBox(width: 4),
+                // Next Button
+                _buildPaginationButton(
+                  icon: Icons.keyboard_arrow_right_rounded,
+                  enabled: current < pages,
+                  isDark: isDark,
+                  onTap: () => controller.changePage(current + 1),
+                ),
+              ],
+            ),
           ),
         ],
       );
@@ -544,7 +550,10 @@ class ReviewTableComponent extends GetView<ReviewController> {
           child: Material(
             color: Colors.transparent,
             child: Container(
-              width: 480,
+              constraints: BoxConstraints(
+                maxWidth: 480,
+                maxHeight: MediaQuery.of(context).size.height * 0.85,
+              ),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF1E222B) : Colors.white,
@@ -578,128 +587,138 @@ class ReviewTableComponent extends GetView<ReviewController> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  // Review Bubble
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.black.withOpacity(0.2)
-                          : Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              item.reviewerName,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            RatingStars(rating: item.rating, size: 10),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        Obx(() {
-                          final controller = Get.find<HomeController>();
-                          return Text(
-                            '"${controller.censorText(item.comment)}"',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          );
-                        }),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  // Response Bubble
-                  Obx(() {
-                    final reply = item.replyText.value;
-                    return Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.primary.withOpacity(0.06),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.primary.withOpacity(0.2),
-                        ),
-                      ),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
+                          // Review Bubble
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? Colors.black.withOpacity(0.2)
+                                  : Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      item.reviewerName,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    RatingStars(rating: item.rating, size: 10),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                Obx(() {
+                                  final controller = Get.find<HomeController>();
+                                  return Text(
+                                    '"${controller.censorText(item.comment)}"',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  );
+                                }),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          // Response Bubble
+                          Obx(() {
+                            final reply = item.replyText.value;
+                            return Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.primary.withOpacity(0.06),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primary.withOpacity(0.2),
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Icon(
-                                    Icons.admin_panel_settings_rounded,
-                                    size: 12,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.admin_panel_settings_rounded,
+                                            size: 12,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Tanggapan Mimin RSUD Soebandi',
+                                            style: TextStyle(
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.bold,
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.primary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          controller.deleteReply(item.id);
+                                          Get.back();
+                                          Get.snackbar(
+                                            'Tanggapan Dihapus',
+                                            'Balasan untuk ${item.reviewerName} berhasil dihapus.',
+                                          );
+                                        },
+                                        style: TextButton.styleFrom(
+                                          padding: EdgeInsets.zero,
+                                          minimumSize: Size.zero,
+                                          tapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                        child: const Text(
+                                          'Hapus',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.redAccent,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 4),
+                                  const SizedBox(height: 6),
                                   Text(
-                                    'Tanggapan Mimin RSUD Soebandi',
-                                    style: TextStyle(
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.bold,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.primary,
+                                    reply,
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontStyle: FontStyle.italic,
                                     ),
                                   ),
                                 ],
                               ),
-                              TextButton(
-                                onPressed: () {
-                                  controller.deleteReply(item.id);
-                                  Get.back();
-                                  Get.snackbar(
-                                    'Tanggapan Dihapus',
-                                    'Balasan untuk ${item.reviewerName} berhasil dihapus.',
-                                  );
-                                },
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.zero,
-                                  minimumSize: Size.zero,
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                child: const Text(
-                                  'Hapus',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: Colors.redAccent,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            reply,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
+                            );
+                          }),
                         ],
                       ),
-                    );
-                  }),
+                    ),
+                  ),
                 ],
               ),
             ),

@@ -18,9 +18,9 @@ class ReviewsListComponent extends GetView<DahsboardController> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Feed Ulasan Google Maps',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              Text(
+                'ulasan_terbaru'.tr,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               Obx(() {
                 final count = controller.filteredReviews.length;
@@ -333,13 +333,17 @@ class ReviewsListComponent extends GetView<DahsboardController> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          item.reviewerName,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: Text(
+                            item.reviewerName,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        const SizedBox(width: 8),
                         Text(
                           item.date,
                           style: TextStyle(
@@ -354,25 +358,28 @@ class ReviewsListComponent extends GetView<DahsboardController> {
                       children: [
                         RatingStars(rating: item.rating, size: 12),
                         const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 4,
-                            vertical: 1,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade200.withOpacity(
-                              isDark ? 0.08 : 0.8,
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 1,
                             ),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            item.locationName.split(' (').first,
-                            style: TextStyle(
-                              fontSize: 8,
-                              fontWeight: FontWeight.bold,
-                              color: isDark
-                                  ? Colors.grey.shade400
-                                  : Colors.grey.shade700,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade200.withOpacity(
+                                isDark ? 0.08 : 0.8,
+                              ),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              item.locationName.split(' (').first,
+                              style: TextStyle(
+                                fontSize: 8,
+                                fontWeight: FontWeight.bold,
+                                color: isDark
+                                    ? Colors.grey.shade400
+                                    : Colors.grey.shade700,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ),
@@ -396,21 +403,24 @@ class ReviewsListComponent extends GetView<DahsboardController> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Wrap(
-                spacing: 4,
-                children: item.tags
-                    .map(
-                      (tag) => Text(
-                        tag,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: theme.colorScheme.primary.withOpacity(0.85),
+              Expanded(
+                child: Wrap(
+                  spacing: 4,
+                  children: item.tags
+                      .map(
+                        (tag) => Text(
+                          tag,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.primary.withOpacity(0.85),
+                          ),
                         ),
-                      ),
-                    )
-                    .toList(),
+                      )
+                      .toList(),
+                ),
               ),
+              const SizedBox(width: 8),
               GlowBadge(label: sentimentText, color: sentimentColor),
             ],
           ),

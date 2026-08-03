@@ -13,18 +13,18 @@ class VibeMeterComponent extends GetView<DahsboardController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Analisis Sentimen & Keyword',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          Text(
+            'vibe_check_title'.tr,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
           // Radial Vibe Score Gauge / Metric
           _buildVibeHeader(theme),
           const SizedBox(height: 16),
           // Sentiment Breakdown Bars
-          const Text(
-            'Rincian Sentimen',
-            style: TextStyle(
+          Text(
+            'rincian_sentimen'.tr,
+            style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
               color: Colors.grey,
@@ -34,9 +34,9 @@ class VibeMeterComponent extends GetView<DahsboardController> {
           _buildSentimentProgressBars(),
           const SizedBox(height: 18),
           // Trending Keyword Word Cloud
-          const Text(
-            'Top Hashtag & Keyword Tren (Gen Z)',
-            style: TextStyle(
+          Text(
+            'top_hashtag'.tr,
+            style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
               color: Colors.grey,

@@ -23,9 +23,9 @@ class BalasScreen extends GetView<BalasController> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Pusat Balasan',
-                        style: TextStyle(
+                      Text(
+                        'pusat_balasan'.tr,
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           letterSpacing: -0.5,
@@ -33,7 +33,7 @@ class BalasScreen extends GetView<BalasController> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Track patient engagement and manage automated response workflows.',
+                        'pusat_balasan_subtitle'.tr,
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey.shade500,
@@ -48,7 +48,7 @@ class BalasScreen extends GetView<BalasController> {
                     IconButton(
                       onPressed: () => controller.fetchReplyLogs(showSnackbar: true),
                       icon: const Icon(Icons.refresh_rounded, size: 16),
-                      tooltip: 'Segarkan data',
+                      tooltip: 'refresh_data'.tr,
                       style: IconButton.styleFrom(
                         foregroundColor: theme.colorScheme.primary,
                         backgroundColor: theme.colorScheme.primary.withOpacity(0.04),

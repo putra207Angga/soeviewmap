@@ -26,7 +26,7 @@ class DashboardMetricsGrid extends GetView<DahsboardController> {
         children: [
           _buildMetricCard(
             context: context,
-            title: 'Total Reviews',
+            title: 'total_reviews'.tr,
             value: '${controller.totalReviewsCount}',
             trend: controller.pendingCount > 0
                 ? '${controller.pendingCount} pending ulasan'
@@ -38,7 +38,7 @@ class DashboardMetricsGrid extends GetView<DahsboardController> {
           ),
           _buildMetricCard(
             context: context,
-            title: 'Rating Rata-rata',
+            title: 'average_rating'.tr,
             value: '${controller.averageRating}',
             trend: 'Stable (${controller.averageRating}★)',
             trendPositive: controller.averageRating >= 4.0,
@@ -48,7 +48,7 @@ class DashboardMetricsGrid extends GetView<DahsboardController> {
           ),
           _buildMetricCard(
             context: context,
-            title: 'Positive Vibes',
+            title: 'positive_vibes'.tr,
             value: '${controller.positivePercentage}%',
             trend: '${controller.positiveVibesTrendPercentage >= 0 ? '+' : ''}${controller.positiveVibesTrendPercentage}% vs kemarin',
             trendPositive: controller.positiveVibesTrendPercentage >= 0,
@@ -58,7 +58,7 @@ class DashboardMetricsGrid extends GetView<DahsboardController> {
           ),
           _buildMetricCard(
             context: context,
-            title: 'Avg Response Time',
+            title: 'avg_response_time'.tr,
             value: '${controller.avgResponseHours} hrs',
             trend: '${controller.responseTargetDifferenceMinutes <= 0 ? '' : '+'}${controller.responseTargetDifferenceMinutes}m vs target',
             trendPositive: controller.responseTargetDifferenceMinutes <= 0,
@@ -107,14 +107,18 @@ class DashboardMetricsGrid extends GetView<DahsboardController> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade500,
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade500,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
@@ -162,14 +166,17 @@ class DashboardMetricsGrid extends GetView<DahsboardController> {
                             : const Color(0xFFF43F5E),
                       ),
                       const SizedBox(width: 4),
-                      Text(
-                        trend,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: trendPositive
-                              ? const Color(0xFF10B981)
-                              : const Color(0xFFF43F5E),
+                      Expanded(
+                        child: Text(
+                          trend,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: trendPositive
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFFF43F5E),
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],

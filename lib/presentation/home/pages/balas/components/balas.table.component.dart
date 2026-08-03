@@ -17,26 +17,32 @@ class BalasTableComponent extends GetView<BalasController> {
           // 1. Table Header Actions (Laporan Log Bulanan, Month Dropdown, Export PDF)
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 12,
+              runSpacing: 8,
               children: [
-                const Text(
-                  'Laporan Log Bulanan',
-                  style: TextStyle(
+                Text(
+                  'month_report'.tr,
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                     letterSpacing: -0.2,
                   ),
                 ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Month Picker Selector
-                    _buildMonthDropdown(context, theme, isDark),
-                    const SizedBox(width: 12),
-                    // Export PDF Button
-                    _buildExportButton(theme, isDark),
-                  ],
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Month Picker Selector
+                      _buildMonthDropdown(context, theme, isDark),
+                      const SizedBox(width: 12),
+                      // Export PDF Button
+                      _buildExportButton(theme, isDark),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -184,7 +190,7 @@ class BalasTableComponent extends GetView<BalasController> {
                 )
               : const Icon(Icons.download_rounded, size: 12),
           label: Text(
-            isExporting ? 'Exporting...' : 'Export PDF',
+            isExporting ? 'Exporting...' : 'export_pdf'.tr,
             style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
           ),
           style: ElevatedButton.styleFrom(
@@ -217,19 +223,19 @@ class BalasTableComponent extends GetView<BalasController> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          SizedBox(width: 100, child: Text('Tanggal', style: headerStyle)),
+          SizedBox(width: 100, child: Text('date'.tr, style: headerStyle)),
           SizedBox(
             width: 140,
-            child: Text('User Pengguna', style: headerStyle),
+            child: Text('reviewer'.tr, style: headerStyle),
           ),
-          SizedBox(width: 100, child: Text('Rating', style: headerStyle)),
-          Expanded(child: Text('Ulasan Pengguna', style: headerStyle)),
-          Expanded(child: Text('Balasan Admin', style: headerStyle)),
+          SizedBox(width: 100, child: Text('rating'.tr, style: headerStyle)),
+          Expanded(child: Text('nav_review'.tr, style: headerStyle)),
+          Expanded(child: Text('nav_balas'.tr, style: headerStyle)),
           SizedBox(
             width: 110,
             child: Align(
               alignment: Alignment.centerRight,
-              child: Text('Status', style: headerStyle),
+              child: Text('status'.tr, style: headerStyle),
             ),
           ),
         ],

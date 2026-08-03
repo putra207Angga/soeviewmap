@@ -24,7 +24,7 @@ class ReviewAnalyticsPanel extends GetView<ReviewController> {
         children: [
           // 1. Positive Ulasan Per Bulan Card
           _buildAnalyticsCard(
-            title: 'ULASAN POSITIF (BULANAN)',
+            title: 'positive_reviews_monthly'.tr,
             value: '$positiveRate%',
             subtitle:
                 'Ulasan positif meningkat sebesar +5.2% dibandingkan bulan lalu.',
@@ -49,7 +49,7 @@ class ReviewAnalyticsPanel extends GetView<ReviewController> {
 
           // 2. Avg Response Time Card
           _buildAnalyticsCard(
-            title: 'AVG WAKTU RESPON',
+            title: 'avg_response_time'.tr,
             value: avgResponse,
             subtitle: controller.stats.value != null
                 ? 'Lebih ${controller.stats.value!.responseTargetDifferenceMinutes <= 0 ? 'cepat' : 'lambat'} ${controller.stats.value!.responseTargetDifferenceMinutes.abs()} menit dari target operasional RSUD.'
@@ -90,7 +90,7 @@ class ReviewAnalyticsPanel extends GetView<ReviewController> {
 
           // 3. Ulasan Pending Card
           _buildAnalyticsCard(
-            title: 'ULASAN PENDING',
+            title: 'pending_reviews_title'.tr,
             value: '$pendingCount',
             subtitle: 'Ulasan menunggu tanggapan resmi dari Tim Humas.',
             child: Row(

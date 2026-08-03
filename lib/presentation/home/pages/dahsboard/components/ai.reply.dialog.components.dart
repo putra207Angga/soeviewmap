@@ -41,7 +41,10 @@ class _AiReplyDialogState extends State<AiReplyDialog> {
       child: Material(
         color: Colors.transparent,
         child: Container(
-          width: 500,
+          constraints: BoxConstraints(
+            maxWidth: 500,
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+          ),
           margin: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1E222B) : Colors.white,
@@ -91,9 +94,9 @@ class _AiReplyDialogState extends State<AiReplyDialog> {
                       ),
                     ),
                     const SizedBox(width: 10),
-                    const Text(
-                      'AI Smart Reply Assistant',
-                      style: TextStyle(
+                    Text(
+                      'ai_smart_reply'.tr,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                       ),
@@ -222,7 +225,7 @@ class _AiReplyDialogState extends State<AiReplyDialog> {
                   children: [
                     TextButton(
                       onPressed: () => Get.back(),
-                      child: const Text('Batal'),
+                      child: Text('cancel'.tr),
                     ),
                     const SizedBox(width: 8),
                     Obx(() {
@@ -245,9 +248,9 @@ class _AiReplyDialogState extends State<AiReplyDialog> {
                                 );
                               },
                         icon: const Icon(Icons.send_rounded, size: 14),
-                        label: const Text(
-                          'Kirim Balasan',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                        label: Text(
+                          'send_reply'.tr,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: theme.colorScheme.primary,

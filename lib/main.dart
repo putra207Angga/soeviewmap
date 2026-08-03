@@ -52,6 +52,9 @@ class Main extends StatelessWidget {
       ),
       initialRoute: initialRoute,
       getPages: Nav.routes,
+      translations: AppTranslation(),
+      locale: TranslationService.getSavedLocale(),
+      fallbackLocale: const Locale('id', 'ID'),
     );
   }
 }

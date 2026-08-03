@@ -28,9 +28,9 @@ class TemplateScreen extends GetView<TemplateController> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Pengaturan Template Balasan Otomatis',
-                            style: TextStyle(
+                          Text(
+                            'template_header_title'.tr,
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               letterSpacing: -0.5,
@@ -38,7 +38,7 @@ class TemplateScreen extends GetView<TemplateController> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Atur pesan balasan berdasarkan rating bintang pelanggan.',
+                            'template_header_subtitle'.tr,
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey.shade500,
@@ -418,7 +418,7 @@ class TemplateScreen extends GetView<TemplateController> {
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
               ),
-              child: const Text('Hapus', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+              child: Text('delete'.tr, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
             ),
           ],
         );
@@ -433,19 +433,19 @@ class TemplateScreen extends GetView<TemplateController> {
       builder: (context) {
         return AlertDialog(
           backgroundColor: isDark ? const Color(0xFF1E222B) : Colors.white,
-          title: const Text(
-            'Hapus Template Bintang',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          title: Text(
+            'delete_template_title'.tr,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
           ),
           content: Text(
-            'Apakah Anda yakin ingin menghapus template untuk bintang $rating?',
+            'delete_template_confirm'.tr,
             style: const TextStyle(fontSize: 11, height: 1.4),
           ),
           actions: [
             TextButton(
               onPressed: () => Get.back(),
               child: Text(
-                'Batal',
+                'cancel'.tr,
                 style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey.shade500),
               ),
             ),
@@ -459,7 +459,7 @@ class TemplateScreen extends GetView<TemplateController> {
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
               ),
-              child: const Text('Hapus', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+              child: Text('delete'.tr, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
             ),
           ],
         );
