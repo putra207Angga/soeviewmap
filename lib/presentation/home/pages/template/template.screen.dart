@@ -16,7 +16,7 @@ class TemplateScreen extends GetView<TemplateController> {
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -36,11 +36,11 @@ class TemplateScreen extends GetView<TemplateController> {
                               letterSpacing: -0.5,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 2),
                           Text(
                             'template_header_subtitle'.tr,
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 11,
                               color: Colors.grey.shade500,
                             ),
                           ),
@@ -53,9 +53,9 @@ class TemplateScreen extends GetView<TemplateController> {
                         ElevatedButton.icon(
                           onPressed: () => _openCreateCustomDialog(context),
                           icon: const Icon(Icons.add_rounded, size: 14),
-                          label: const Text(
-                            'New Template',
-                            style: TextStyle(
+                          label: Text(
+                            'new_template'.tr,
+                            style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
@@ -65,7 +65,7 @@ class TemplateScreen extends GetView<TemplateController> {
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 14,
-                              vertical: 10,
+                              vertical: 8,
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -77,9 +77,9 @@ class TemplateScreen extends GetView<TemplateController> {
                         TextButton.icon(
                           onPressed: () => _confirmResetDialog(context),
                           icon: const Icon(Icons.restore_rounded, size: 14),
-                          label: const Text(
-                            'Reset Default',
-                            style: TextStyle(
+                          label: Text(
+                            'reset_default'.tr,
+                            style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
@@ -88,7 +88,7 @@ class TemplateScreen extends GetView<TemplateController> {
                             foregroundColor: Colors.redAccent,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 12,
-                              vertical: 8,
+                              vertical: 6,
                             ),
                           ),
                         ),
@@ -96,120 +96,131 @@ class TemplateScreen extends GetView<TemplateController> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
 
                 // 2. Webhook & Secret Token configuration panel
                 const BotConfigPanel(),
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
 
-                // 3. Grid/Column of Star Templates
-                Text(
-                  'TEMPLATE BERDASARKAN BINTANG',
-                  style: TextStyle(
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade500,
-                    letterSpacing: 0.5,
+                // 3. Scrollable Templates Container (Fit on 16-inch screen)
+                SizedBox(
+                  height: 310,
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'template_by_star'.tr,
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey.shade500,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+
+                        Obx(() {
+                          final templates = controller.starTemplates;
+                          if (templates.isEmpty) {
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 20),
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                          }
+
+                          // Star ratings from 5 down to 1
+                          final starsKeys = [5, 4, 3, 2, 1];
+                          return ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: starsKeys.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 10),
+                            itemBuilder: (context, index) {
+                              final rating = starsKeys[index];
+                              final templateText = templates[rating] ?? '';
+                              return TemplateCard(
+                                rating: rating,
+                                templateText: templateText,
+                                onEditTap: () =>
+                                    _openEditDialog(context, rating, templateText),
+                                onDeleteTap: () =>
+                                    _confirmDeleteTemplate(context, rating),
+                              );
+                            },
+                          );
+                        }),
+                        
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'custom_template_section'.tr,
+                              style: TextStyle(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey.shade500,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            TextButton.icon(
+                              onPressed: () => _openCreateCustomDialog(context),
+                              icon: const Icon(Icons.add_rounded, size: 14),
+                              label: Text(
+                                'add_custom_template'.tr,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              style: TextButton.styleFrom(
+                                foregroundColor: theme.colorScheme.primary,
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+
+                        Obx(() {
+                          final customList = controller.customTemplates;
+                          if (customList.isEmpty) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              decoration: BoxDecoration(
+                                color: isDark ? Colors.black.withOpacity(0.1) : Colors.grey.shade50,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  'no_custom_templates'.tr,
+                                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                                ),
+                              ),
+                            );
+                          }
+
+                          return ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: customList.length,
+                            separatorBuilder: (context, index) => const SizedBox(height: 16),
+                            itemBuilder: (context, index) {
+                              final item = customList[index];
+                              return _buildCustomTemplateCard(context, item, isDark, theme);
+                            },
+                          );
+                        }),
+                      ],
+                    ),
                   ),
                 ),
-                const SizedBox(height: 10),
-
-                Obx(() {
-                  final templates = controller.starTemplates;
-                  if (templates.isEmpty) {
-                    return const Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 40),
-                        child: CircularProgressIndicator(),
-                      ),
-                    );
-                  }
-
-                  // Star ratings from 5 down to 1
-                  final starsKeys = [5, 4, 3, 2, 1];
-                  return ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: starsKeys.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 16),
-                    itemBuilder: (context, index) {
-                      final rating = starsKeys[index];
-                      final templateText = templates[rating] ?? '';
-                      return TemplateCard(
-                        rating: rating,
-                        templateText: templateText,
-                        onEditTap: () =>
-                            _openEditDialog(context, rating, templateText),
-                        onDeleteTap: () =>
-                            _confirmDeleteTemplate(context, rating),
-                      );
-                    },
-                  );
-                }),
-                
-                const SizedBox(height: 28),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'TEMPLATE KUSTOM (LOKASI / KATA KUNCI)',
-                      style: TextStyle(
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade500,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    TextButton.icon(
-                      onPressed: () => _openCreateCustomDialog(context),
-                      icon: const Icon(Icons.add_rounded, size: 14),
-                      label: const Text(
-                        'Tambah Kustom',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      style: TextButton.styleFrom(
-                        foregroundColor: theme.colorScheme.primary,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-
-                Obx(() {
-                  final customList = controller.customTemplates;
-                  if (customList.isEmpty) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(vertical: 30),
-                      decoration: BoxDecoration(
-                        color: isDark ? Colors.black.withOpacity(0.1) : Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Belum ada template kustom. Silakan klik Tambah Kustom atau New Template di bagian atas.',
-                          style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-                        ),
-                      ),
-                    );
-                  }
-
-                  return ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: customList.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 16),
-                    itemBuilder: (context, index) {
-                      final item = customList[index];
-                      return _buildCustomTemplateCard(context, item, isDark, theme);
-                    },
-                  );
-                }),
               ],
             ),
           ),

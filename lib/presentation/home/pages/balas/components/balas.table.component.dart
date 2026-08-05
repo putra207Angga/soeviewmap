@@ -123,12 +123,15 @@ class BalasTableComponent extends GetView<BalasController> {
     return Obx(() {
       final months = controller.availableMonths;
       return PopupMenuButton<String>(
+        constraints: const BoxConstraints(maxHeight: 220, minWidth: 150),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         onSelected: (month) => controller.changeMonth(month),
         offset: const Offset(0, 35),
         itemBuilder: (context) => months
             .map(
               (m) => PopupMenuItem(
                 value: m,
+                height: 36,
                 child: Text(m, style: const TextStyle(fontSize: 11)),
               ),
             )
@@ -319,7 +322,7 @@ class BalasTableComponent extends GetView<BalasController> {
                 child: Obx(() {
                   final reply = item.adminReply.value;
                   return Text(
-                    reply.isEmpty ? 'Belum ditanggapi' : '"$reply"',
+                    reply.isEmpty ? 'not_replied_yet'.tr : '"$reply"',
                     style: TextStyle(
                       fontSize: 11,
                       fontStyle: reply.isEmpty
@@ -347,7 +350,7 @@ class BalasTableComponent extends GetView<BalasController> {
                 child: Obx(() {
                   final isSent = item.status.value == 'terkirim';
                   return GlowBadge(
-                    label: isSent ? 'Terkirim' : 'Pending',
+                    label: isSent ? 'replied_status'.tr : 'pending_status'.tr,
                     color: isSent
                         ? const Color(0xFF10B981)
                         : const Color(0xFFF43F5E),
@@ -375,7 +378,7 @@ class BalasTableComponent extends GetView<BalasController> {
             ),
             const SizedBox(height: 12),
             Text(
-              'Tidak ada log balasan',
+              'no_reply_logs'.tr,
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,

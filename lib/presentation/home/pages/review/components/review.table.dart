@@ -240,7 +240,7 @@ class ReviewTableComponent extends GetView<ReviewController> {
             child: Obx(() {
               final replied = item.replyText.value.isNotEmpty;
               return GlowBadge(
-                label: replied ? 'REPLIED' : 'PENDING',
+                label: replied ? 'status_replied'.tr : 'status_pending'.tr,
                 color: replied
                     ? const Color(0xFF10B981)
                     : const Color(0xFFF43F5E),
@@ -259,7 +259,7 @@ class ReviewTableComponent extends GetView<ReviewController> {
                   return TextButton(
                     onPressed: () => _openViewThreadDialog(context, item),
                     child: Text(
-                      'View Thread',
+                      'view_thread'.tr,
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
@@ -283,9 +283,9 @@ class ReviewTableComponent extends GetView<ReviewController> {
                         ),
                         elevation: 0,
                       ),
-                      child: const Text(
-                        'Quick Reply',
-                        style: TextStyle(
+                      child: Text(
+                        'quick_reply'.tr,
+                        style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                         ),
@@ -309,7 +309,7 @@ class ReviewTableComponent extends GetView<ReviewController> {
           Icon(Icons.search_off_rounded, size: 48, color: Colors.grey.shade500),
           const SizedBox(height: 12),
           Text(
-            'Tidak ada ulasan ditemukan',
+            'no_reviews_found'.tr,
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
@@ -317,9 +317,9 @@ class ReviewTableComponent extends GetView<ReviewController> {
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'Ganti filter Anda untuk mencari yang lain.',
-            style: TextStyle(fontSize: 11, color: Colors.grey),
+          Text(
+            'change_filter_desc'.tr,
+            style: const TextStyle(fontSize: 11, color: Colors.grey),
           ),
         ],
       ),
@@ -338,7 +338,7 @@ class ReviewTableComponent extends GetView<ReviewController> {
           ),
           const SizedBox(height: 12),
           Text(
-            'Memuat data ulasan...',
+            'loading_reviews'.tr,
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
@@ -410,7 +410,7 @@ class ReviewTableComponent extends GetView<ReviewController> {
         children: [
           // Left: Showing count description
           Text(
-            'Showing $start-$end of $total reviews',
+            'showing_reviews_count'.trParams({'start': '$start', 'end': '$end', 'total': '$total'}),
             style: TextStyle(
               fontSize: 11,
               color: Colors.grey.shade500,

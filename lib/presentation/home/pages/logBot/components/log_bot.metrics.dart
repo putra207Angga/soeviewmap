@@ -34,9 +34,9 @@ class LogBotMetricsPanel extends GetView<LogBotController> {
           // 1. Bot Status Card
           _buildMetricCard(
             isDark: isDark,
-            title: 'STATUS INTEGRASI BOT',
+            title: 'bot_status_title'.tr,
             value: botStatusStr,
-            subtitle: 'Bot auto-reply tersambung & aktif.',
+            subtitle: 'bot_status_desc'.tr,
             child: Row(
               children: [
                 Container(
@@ -51,7 +51,7 @@ class LogBotMetricsPanel extends GetView<LogBotController> {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  botStatusStr == 'ACTIVE' ? 'Sistem Normal' : 'Offline',
+                  botStatusStr == 'ACTIVE' ? 'system_normal'.tr : 'Offline',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
@@ -67,20 +67,20 @@ class LogBotMetricsPanel extends GetView<LogBotController> {
           // 2. Total Auto Replied
           _buildMetricCard(
             isDark: isDark,
-            title: 'TOTAL BALASAN OTOMATIS',
+            title: 'total_auto_replied'.tr,
             value: '$totalReplied',
-            subtitle: 'Akumulasi balasan ulasan terkirim.',
-            child: const Row(
+            subtitle: 'total_auto_replied_desc'.tr,
+            child: Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.auto_awesome_rounded,
                   size: 14,
                   color: Color(0xFF6366F1),
                 ),
-                SizedBox(width: 4),
+                const SizedBox(width: 4),
                 Text(
-                  'Auto-reply Active',
-                  style: TextStyle(
+                  'auto_reply_active'.tr,
+                  style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF6366F1),
@@ -93,9 +93,9 @@ class LogBotMetricsPanel extends GetView<LogBotController> {
           // 3. Total Logs Card
           _buildMetricCard(
             isDark: isDark,
-            title: 'TOTAL LOG OPERASIONAL',
+            title: 'total_logs_title'.tr,
             value: '$totalLogs',
-            subtitle: 'Event audit log tersimpan di sesi ini.',
+            subtitle: 'total_logs_desc'.tr,
             child: Row(
               children: [
                 const Icon(
@@ -105,7 +105,7 @@ class LogBotMetricsPanel extends GetView<LogBotController> {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  '${controller.errorCount} Errors Detected',
+                  '${controller.errorCount} ${"errors_detected".tr}',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
@@ -119,20 +119,20 @@ class LogBotMetricsPanel extends GetView<LogBotController> {
           // 4. Last Sync Card
           _buildMetricCard(
             isDark: isDark,
-            title: 'TERAKHIR DIPERIKSA',
+            title: 'last_checked_title'.tr,
             value: lastCheckedStr,
-            subtitle: 'Sinkronisasi ulasan Google Maps.',
-            child: const Row(
+            subtitle: 'last_checked_desc'.tr,
+            child: Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.sync_rounded,
                   size: 14,
                   color: Colors.green,
                 ),
-                SizedBox(width: 4),
+                const SizedBox(width: 4),
                 Text(
-                  'Terhubung ke Server',
-                  style: TextStyle(
+                  'connected_to_server'.tr,
+                  style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
                     color: Colors.green,

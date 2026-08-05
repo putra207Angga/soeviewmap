@@ -187,9 +187,9 @@ class ReviewController extends GetxController {
 
   String get avgResponseTime {
     if (stats.value != null) {
-      return '${stats.value!.avgResponseHours} hrs';
+      return '${stats.value!.avgResponseHours} ${"hours_short".tr}';
     }
-    return '2.4 hrs';
+    return '2.4 ${"hours_short".tr}';
   }
 
   void submitQuickReply(String reviewId, String reply) {

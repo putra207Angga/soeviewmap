@@ -13,6 +13,7 @@ class SettingsDrawer extends StatelessWidget {
     controller.loadSettings();
 
     return Drawer(
+      width: 340,
       backgroundColor: isDark ? const Color(0xFF13151A) : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
@@ -30,30 +31,35 @@ class SettingsDrawer extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(10),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            Icons.settings_rounded,
+                            color: theme.colorScheme.primary,
+                            size: 20,
+                          ),
                         ),
-                        child: Icon(
-                          Icons.settings_rounded,
-                          color: theme.colorScheme.primary,
-                          size: 20,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'settings_title'.tr,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.2,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'settings_title'.tr,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   IconButton(
                     onPressed: () => Get.back(),
@@ -133,11 +139,14 @@ class SettingsDrawer extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              Text(
-                                'select_language'.tr,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                              Expanded(
+                                child: Text(
+                                  'select_language'.tr,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
@@ -225,6 +234,7 @@ class SettingsDrawer extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           Obx(() => DropdownButtonFormField<int>(
+                            isExpanded: true,
                             value: controller.notificationLimit.value,
                             items: [
                               DropdownMenuItem(value: 20, child: Text('20 ${"notifications".tr}')),

@@ -14,7 +14,7 @@ class BotConfigPanel extends GetView<TemplateController> {
       glowColor: const Color(0xFF10B981), // Emerald glow
       glowOpacity: 0.01,
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -34,10 +34,10 @@ class BotConfigPanel extends GetView<TemplateController> {
                             size: 20,
                           ),
                           const SizedBox(width: 8),
-                          const Expanded(
+                          Expanded(
                             child: Text(
-                              'Bot Status Monitoring',
-                              style: TextStyle(
+                              'bot_monitoring_title'.tr,
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: -0.2,
@@ -49,7 +49,7 @@ class BotConfigPanel extends GetView<TemplateController> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Pantau status operasional dan aktivitas real-time bot balasan otomatis Anda.',
+                        'bot_monitoring_desc'.tr,
                         style: TextStyle(
                           fontSize: 11,
                           color: Colors.grey.shade500,
@@ -80,7 +80,7 @@ class BotConfigPanel extends GetView<TemplateController> {
                         _StatusIndicatorDot(isActive: isActive),
                         const SizedBox(width: 8),
                         Text(
-                          isActive ? 'BOT ACTIVE' : 'BOT INACTIVE',
+                          isActive ? 'bot_active'.tr : 'bot_inactive'.tr,
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
@@ -111,7 +111,7 @@ class BotConfigPanel extends GetView<TemplateController> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'STATUS MESSAGE',
+                      'status_message_label'.tr,
                       style: TextStyle(
                         fontSize: 9,
                         fontWeight: FontWeight.bold,
@@ -136,7 +136,7 @@ class BotConfigPanel extends GetView<TemplateController> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'LAST CHECKED TIME',
+                      'last_checked_time_label'.tr,
                       style: TextStyle(
                         fontSize: 9,
                         fontWeight: FontWeight.bold,
@@ -161,7 +161,7 @@ class BotConfigPanel extends GetView<TemplateController> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'TOTAL AUTO REPLIES',
+                      'total_auto_replies_label'.tr,
                       style: TextStyle(
                         fontSize: 9,
                         fontWeight: FontWeight.bold,
@@ -173,7 +173,7 @@ class BotConfigPanel extends GetView<TemplateController> {
                     Obx(
                       () => _buildCopyableField(
                         context,
-                        text: '${controller.totalAutoRepliedCount.value} ulasan',
+                        text: '${controller.totalAutoRepliedCount.value} ${"reviews_count".tr}',
                         isDark: isDark,
                         theme: theme,
                         label: 'Total Auto Replies',

@@ -10,7 +10,7 @@ class ReviewFiltersPanel extends GetView<ReviewController> {
     final isWide = context.width > 950;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.only(bottom: 4),
       child: Flex(
         direction: isWide ? Axis.horizontal : Axis.vertical,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -25,16 +25,16 @@ class ReviewFiltersPanel extends GetView<ReviewController> {
               Text(
                 'nav_review'.tr,
                 style: TextStyle(
-                  fontSize: context.width > 600 ? 28 : 22,
+                  fontSize: context.width > 600 ? 22 : 18,
                   fontWeight: FontWeight.w900,
                   color: isDark ? Colors.white : const Color(0xFF0F172A),
                   letterSpacing: -0.5,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 'review_subtitle'.tr,
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
               ),
             ],
           ),
@@ -67,11 +67,11 @@ class ReviewFiltersPanel extends GetView<ReviewController> {
                 value: controller.selectedRating,
                 itemMap: {
                   'All Ratings': 'all_ratings'.tr,
-                  '5 Stars': '5 Stars',
-                  '4 Stars': '4 Stars',
-                  '3 Stars': '3 Stars',
-                  '2 Stars': '2 Stars',
-                  '1 Star': '1 Star',
+                  '5 Stars': '5 ${"star_label".tr}',
+                  '4 Stars': '4 ${"star_label".tr}',
+                  '3 Stars': '3 ${"star_label".tr}',
+                  '2 Stars': '2 ${"star_label".tr}',
+                  '1 Star': '1 ${"star_label".tr}',
                 },
                 isDark: isDark,
                 theme: theme,

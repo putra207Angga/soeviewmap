@@ -63,8 +63,8 @@ class Sidebar extends GetView<HomeController> {
                       ),
                     ),
                     Text(
-                      'Review Management',
-                      style: TextStyle(
+                      'review_management'.tr,
+                      style: const TextStyle(
                         fontSize: 10,
                         color: Colors.grey,
                         fontWeight: FontWeight.bold,
@@ -212,9 +212,9 @@ class Sidebar extends GetView<HomeController> {
                 ),
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.add_rounded, size: 18),
-                  label: const Text(
-                    'New Template',
-                    style: TextStyle(
+                  label: Text(
+                    'new_template'.tr,
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 13,
                       letterSpacing: -0.1,
@@ -276,13 +276,13 @@ class Sidebar extends GetView<HomeController> {
           // Bottom Utilities
           _buildUtilityItem(
             icon: Icons.lock_outline_rounded,
-            label: 'Lock Screen',
+            label: 'lock_screen'.tr,
             onTap: onLockScreenPressed,
             context: context,
           ),
           _buildUtilityItem(
             icon: Icons.logout_rounded,
-            label: 'Logout',
+            label: 'logout'.tr,
             onTap: onLogoutPressed,
             isDestructive: true,
             context: context,

@@ -48,9 +48,9 @@ class BalasDetailsDialog extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Detail Log & Tanggapan',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  Text(
+                    'detail_log_title'.tr,
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                   IconButton(
                     onPressed: () => Get.back(),
@@ -131,7 +131,7 @@ class BalasDetailsDialog extends StatelessWidget {
 
               // 2. Admin Response View
               Text(
-                'TANGGAPAN ADMIN / BOT',
+                'admin_reply_header'.tr,
                 style: TextStyle(
                   fontSize: 9,
                   fontWeight: FontWeight.bold,

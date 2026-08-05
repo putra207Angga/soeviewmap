@@ -24,7 +24,7 @@ class BalasLogModel {
 }
 
 class BalasController extends GetxController {
-  final selectedMonth = 'Juli 2026'.obs;
+  final selectedMonth = 'all_months'.tr.obs;
   final isExporting = false.obs;
   final isLoading = true.obs;
 
@@ -34,7 +34,12 @@ class BalasController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    selectedMonth.value = 'all_months'.tr;
     fetchReplyLogs();
+  }
+
+  void changeMonth(String month) {
+    selectedMonth.value = month;
   }
 
   Future<void> fetchReplyLogs({bool showSnackbar = false}) async {
@@ -55,13 +60,10 @@ class BalasController extends GetxController {
           );
         }).toList();
         replyLogs.assignAll(mapped);
-        
-        // Dynamically select the first available month if any
+
         final months = availableMonths;
-        if (months.isNotEmpty) {
-          if (!months.contains(selectedMonth.value)) {
-            selectedMonth.value = months.first;
-          }
+        if (months.isNotEmpty && !months.contains(selectedMonth.value)) {
+          selectedMonth.value = 'all_months'.tr;
         }
 
         if (showSnackbar) {
@@ -166,27 +168,35 @@ class BalasController extends GetxController {
       ),
     ]);
 
-    // Force select July 2026 as it matches mock data
-    final months = availableMonths;
-    if (months.contains('Juli 2026')) {
-      selectedMonth.value = 'Juli 2026';
-    } else if (months.isNotEmpty) {
-      selectedMonth.value = months.first;
+    // Set default selected month to all_months
+    if (selectedMonth.value.isEmpty) {
+      selectedMonth.value = 'all_months'.tr;
     }
   }
 
   List<String> get availableMonths {
-    final months = <String>{};
+    final monthsSet = <String>{};
+    final now = DateTime.now();
+
+    // 1. Generate past 6 months dynamically starting from current date
+    for (int i = 0; i < 6; i++) {
+      final date = DateTime(now.year, now.month - i, 1);
+      final monthName = _getFullMonthNameByMonthIndex(date.month);
+      monthsSet.add('$monthName ${date.year}');
+    }
+
+    // 2. Add any extra months present in existing replyLogs
     for (final log in replyLogs) {
       final parts = log.date.split(' ');
       if (parts.length >= 3) {
         final logMonthAbbr = parts[1];
         final logYear = parts[2];
         final fullName = _getFullMonthName(logMonthAbbr);
-        months.add('$fullName $logYear');
+        monthsSet.add('$fullName $logYear');
       }
     }
-    final list = months.toList();
+
+    final list = monthsSet.toList();
     list.sort((a, b) {
       try {
         final aParts = a.split(' ');
@@ -203,10 +213,26 @@ class BalasController extends GetxController {
         return 0;
       }
     });
-    if (list.isEmpty) {
-      return ['Juli 2026', 'Oktober 2023'];
+
+    return ['all_months'.tr, ...list];
+  }
+
+  String _getFullMonthNameByMonthIndex(int month) {
+    switch (month) {
+      case 1: return 'Januari';
+      case 2: return 'Februari';
+      case 3: return 'Maret';
+      case 4: return 'April';
+      case 5: return 'Mei';
+      case 6: return 'Juni';
+      case 7: return 'Juli';
+      case 8: return 'Agustus';
+      case 9: return 'September';
+      case 10: return 'Oktober';
+      case 11: return 'November';
+      case 12: return 'Desember';
+      default: return '';
     }
-    return list;
   }
 
   String _getFullMonthName(String abbr) {
@@ -246,7 +272,12 @@ class BalasController extends GetxController {
   }
 
   List<BalasLogModel> get filteredReplyLogs {
-    if (selectedMonth.value.isEmpty) {
+    final selected = selectedMonth.value;
+    if (selected.isEmpty ||
+        selected == 'all_months'.tr ||
+        selected.toLowerCase().contains('semua') ||
+        selected.toLowerCase().contains('kabeh') ||
+        selected.toLowerCase().contains('kabbhinah')) {
       return replyLogs;
     }
     return replyLogs.where((log) {
@@ -255,8 +286,8 @@ class BalasController extends GetxController {
       final logMonthName = parts[1].toLowerCase();
       final logYear = parts[2];
       
-      final monthParts = selectedMonth.value.split(' ');
-      if (monthParts.length < 2) return false;
+      final monthParts = selected.split(' ');
+      if (monthParts.length < 2) return true;
       final selectedMonthName = monthParts[0].toLowerCase();
       final selectedYear = monthParts[1];
       
@@ -595,10 +626,6 @@ class BalasController extends GetxController {
     } finally {
       isExporting.value = false;
     }
-  }
-
-  void changeMonth(String month) {
-    selectedMonth.value = month;
   }
 
   void updateAdminReply(String logId, String newReply) {
