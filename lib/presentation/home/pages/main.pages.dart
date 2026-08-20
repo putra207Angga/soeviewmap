@@ -7,7 +7,7 @@ import 'package:soeviewmap/presentation/screens.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:soeviewmap/infrastructure/dal/services/file_saver/file_saver_helper.dart';
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 import '../components/main.components.dart';

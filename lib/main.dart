@@ -7,8 +7,8 @@ import 'package:get/get.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 
 void main() async {
-  usePathUrlStrategy();
   WidgetsFlutterBinding.ensureInitialized();
+  usePathUrlStrategy();
   // Initialize SecureStorageServices and load env keys before other services
   Get.put<SecureStorageServices>(SecureStorageServices(), permanent: true);
   // Register ConfigEnvironments after SecureStorage loads keys

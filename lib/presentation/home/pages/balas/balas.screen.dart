@@ -105,7 +105,7 @@ class BalasScreen extends GetView<BalasController> {
                   _buildHeader(context, theme),
                   const SizedBox(height: 10),
                   const SizedBox(
-                    height: 360,
+                    height: 440,
                     child: BalasTableComponent(),
                   ),
                 ],

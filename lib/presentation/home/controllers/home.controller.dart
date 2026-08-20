@@ -161,7 +161,7 @@ class HomeController extends GetxController {
 
   void startPolling() {
     _pollingTimer?.cancel();
-    _pollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+    _pollingTimer = Timer.periodic(const Duration(minutes: 5), (_) {
       if (userProfile.value != null) {
         fetchNotifications();
         fetchUnreadCount();
@@ -253,31 +253,14 @@ class HomeController extends GetxController {
     );
   }
 
+  static final RegExp _profanityRegExp = RegExp(
+    r'(anjing|babi|goblok|tolol|bangsat|kontol|memek|peler|ngentot|jembut|pantek|asu|bajingan)',
+    caseSensitive: false,
+  );
+
   String censorText(String text) {
-    if (!isFilterProfanity.value) return text;
-    final badWords = [
-      'anjing',
-      'babi',
-      'goblok',
-      'tolol',
-      'bangsat',
-      'kontol',
-      'memek',
-      'peler',
-      'ngentot',
-      'jembut',
-      'pantek',
-      'asu',
-      'bajingan',
-    ];
-    String censored = text;
-    for (final word in badWords) {
-      censored = censored.replaceAll(
-        RegExp(RegExp.escape(word), caseSensitive: false),
-        '***',
-      );
-    }
-    return censored;
+    if (!isFilterProfanity.value || text.isEmpty) return text;
+    return text.replaceAll(_profanityRegExp, '***');
   }
 
   void toNavigation(int index) {

@@ -24,9 +24,38 @@ class BalasLogModel {
 }
 
 class BalasController extends GetxController {
-  final selectedMonth = 'all_months'.tr.obs;
+  static String get _currentMonthString {
+    final now = DateTime.now();
+    final monthNames = [
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember',
+    ];
+    return '${monthNames[now.month - 1]} ${now.year}';
+  }
+
+  late final selectedMonth = _currentMonthString.obs;
   final isExporting = false.obs;
   final isLoading = true.obs;
+  final isBackgroundLoading = false.obs;
+
+  // Pagination State
+  final currentPage = 1.obs;
+  final pageSize = 5.obs;
+
+  // Token to prevent stale background fetches when filter changes
+  int _currentFetchToken = 0;
+
+  final ScrollController scrollController = ScrollController();
 
   // Reactive list of reply logs
   final replyLogs = <BalasLogModel>[].obs;
@@ -34,61 +63,192 @@ class BalasController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    selectedMonth.value = 'all_months'.tr;
+    selectedMonth.value = _currentMonthString;
     fetchReplyLogs();
+
+    // Auto re-fetch saat filter bulan di UI diubah oleh pengguna
+    ever(selectedMonth, (_) {
+      currentPage.value = 1;
+      fetchReplyLogs();
+    });
+  }
+
+  @override
+  void onClose() {
+    scrollController.dispose();
+    super.onClose();
   }
 
   void changeMonth(String month) {
     selectedMonth.value = month;
+    currentPage.value = 1;
   }
 
   Future<void> fetchReplyLogs({bool showSnackbar = false}) async {
+    final fetchToken = ++_currentFetchToken;
     isLoading.value = true;
-    try {
-      final response = await ReviewDao.use.getReviews(status: 'replied');
-      if (response.statusCode == 200 && response.body != null) {
-        final List<dom.ReviewModel> apiReviews = response.body!.items;
-        final mapped = apiReviews.map((item) {
-          return BalasLogModel(
-            id: item.id.toString(),
-            date: _formatDateTime(item.createdAt),
-            reviewerName: item.reviewerName,
-            rating: item.rating.toDouble(),
-            reviewText: item.comment,
-            initialReply: item.replyText,
-            initialStatus: (item.replyText.isNotEmpty) ? 'terkirim' : 'pending',
-          );
-        }).toList();
-        replyLogs.assignAll(mapped);
+    isBackgroundLoading.value = false;
+    currentPage.value = 1;
 
-        final months = availableMonths;
-        if (months.isNotEmpty && !months.contains(selectedMonth.value)) {
-          selectedMonth.value = 'all_months'.tr;
+    try {
+      String? apiTimeRange;
+      final selected = selectedMonth.value;
+      if (selected.isNotEmpty) {
+        apiTimeRange = selected;
+      }
+
+      int page = 1;
+      const int pageFetchSize = 5;
+      bool hasMorePages = true;
+
+      // 1. Fetch halaman pertama (5 items) terlebih dahulu untuk responsivitas UI
+      final firstResponse = await ReviewDao.use.getReviews(
+        timeRange: apiTimeRange,
+        page: page,
+        pageSize: pageFetchSize,
+      );
+
+      if (fetchToken != _currentFetchToken) return;
+
+      final List<BalasLogModel> initialBatch = [];
+
+      if (firstResponse.statusCode == 200 && firstResponse.body != null) {
+        final List<dom.ReviewModel> apiReviews = firstResponse.body!.items;
+        final meta = firstResponse.body!.meta;
+
+        if (apiReviews.isNotEmpty) {
+          final mapped = apiReviews.map((item) {
+            return BalasLogModel(
+              id: item.id.toString(),
+              date: _formatDateTime(item.createdAt),
+              reviewerName: item.reviewerName,
+              rating: item.rating.toDouble(),
+              reviewText: item.comment,
+              initialReply: item.replyText,
+              initialStatus: (item.replyText.isNotEmpty) ? 'terkirim' : 'pending',
+            );
+          }).toList();
+          initialBatch.addAll(mapped);
         }
 
-        if (showSnackbar) {
-          Get.snackbar(
-            'Refresh Sukses',
-            'Log balasan berhasil diperbarui dari server.',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Get.isDarkMode
-                ? const Color(0xFF1E222B)
-                : Colors.white.withOpacity(0.95),
-            colorText: Get.isDarkMode ? Colors.white : Colors.black,
-            borderWidth: 1,
-            borderColor: Get.isDarkMode
-                ? const Color(0xFF2E3440)
-                : Colors.grey.shade200,
-          );
+        if (initialBatch.length >= meta.totalItems || meta.totalItems <= 0) {
+          hasMorePages = false;
+        } else if (apiReviews.length < pageFetchSize) {
+          hasMorePages = false;
+        } else {
+          page++;
         }
       } else {
-        _loadMockLogs();
+        hasMorePages = false;
+      }
+
+      // Langsung tampilkan 5 ulasan pertama ke UI!
+      replyLogs.assignAll(initialBatch);
+      isLoading.value = false;
+
+      // 2. Jika masih ada halaman berikutnya, teruskan ambil data di background sampai totalItems tercapai
+      if (hasMorePages) {
+        isBackgroundLoading.value = true;
+        final existingIds = initialBatch.map((e) => e.id).toSet();
+
+        while (hasMorePages) {
+          if (fetchToken != _currentFetchToken) {
+            isBackgroundLoading.value = false;
+            return;
+          }
+
+          final response = await ReviewDao.use.getReviews(
+            timeRange: apiTimeRange,
+            page: page,
+            pageSize: pageFetchSize,
+          );
+
+          if (fetchToken != _currentFetchToken) {
+            isBackgroundLoading.value = false;
+            return;
+          }
+
+          if (response.statusCode == 200 && response.body != null) {
+            final List<dom.ReviewModel> apiReviews = response.body!.items;
+            final meta = response.body!.meta;
+
+            if (apiReviews.isNotEmpty) {
+              final newMapped = <BalasLogModel>[];
+              for (final item in apiReviews) {
+                final idStr = item.id.toString();
+                if (!existingIds.contains(idStr)) {
+                  existingIds.add(idStr);
+                  newMapped.add(
+                    BalasLogModel(
+                      id: idStr,
+                      date: _formatDateTime(item.createdAt),
+                      reviewerName: item.reviewerName,
+                      rating: item.rating.toDouble(),
+                      reviewText: item.comment,
+                      initialReply: item.replyText,
+                      initialStatus: (item.replyText.isNotEmpty)
+                          ? 'terkirim'
+                          : 'pending',
+                    ),
+                  );
+                }
+              }
+
+              if (newMapped.isEmpty) {
+                hasMorePages = false;
+              } else {
+                replyLogs.addAll(newMapped);
+              }
+            } else {
+              hasMorePages = false;
+            }
+
+            // Hentikan pemuatan secara eksplisit jika jumlah item yang telah dimuat mencapai meta.totalItems
+            if (replyLogs.length >= meta.totalItems || meta.totalItems <= 0) {
+              hasMorePages = false;
+            } else if (apiReviews.length < pageFetchSize) {
+              hasMorePages = false;
+            } else {
+              page++;
+            }
+          } else {
+            hasMorePages = false;
+          }
+        }
+
+        isBackgroundLoading.value = false;
+      }
+
+      final months = availableMonths;
+      if (months.isNotEmpty && !months.contains(selectedMonth.value)) {
+        selectedMonth.value = months.first;
+      }
+
+      if (showSnackbar) {
+        Get.snackbar(
+          'Refresh Sukses',
+          'Log balasan berhasil diperbarui dari server.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Get.isDarkMode
+              ? const Color(0xFF1E222B)
+              : Colors.white.withOpacity(0.95),
+          colorText: Get.isDarkMode ? Colors.white : Colors.black,
+          borderWidth: 1,
+          borderColor: Get.isDarkMode
+              ? const Color(0xFF2E3440)
+              : Colors.grey.shade200,
+        );
       }
     } catch (e) {
       print('BalasController fetchReplyLogs error: $e');
-      _loadMockLogs();
     } finally {
-      isLoading.value = false;
+      if (fetchToken == _currentFetchToken) {
+        if (selectedMonth.value.isEmpty) {
+          selectedMonth.value = _currentMonthString;
+        }
+        isLoading.value = false;
+        isBackgroundLoading.value = false;
+      }
     }
   }
 
@@ -108,70 +268,6 @@ class BalasController extends GetxController {
       'Des',
     ];
     return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
-  }
-
-  void _loadMockLogs() {
-    replyLogs.assignAll([
-      BalasLogModel(
-        id: '1',
-        date: '28 Jul 2026',
-        reviewerName: 'Nia utami',
-        rating: 5.0,
-        reviewText: 'Adik saya melahirkan diruang bersalin, dokter dan bidannya telaten dan ramah. S...',
-        initialReply: 'Yth. Bapak/Ibu Nia utami,',
-        initialStatus: 'terkirim',
-      ),
-      BalasLogModel(
-        id: '2',
-        date: '28 Jul 2026',
-        reviewerName: 'Meinar Eka',
-        rating: 5.0,
-        reviewText: 'Istri saya dirawat di ruang bersalin, selama dirawat disini pelayanannya baik, ...',
-        initialReply: 'Yth. Bapak/Ibu Meinar Eka,',
-        initialStatus: 'terkirim',
-      ),
-      BalasLogModel(
-        id: '3',
-        date: '27 Jul 2026',
-        reviewerName: 'Erick Bsett',
-        rating: 5.0,
-        reviewText: 'Pelayanan Dokter dan Bidan "Dokter kandungan dan bidannya sangat ramah, s...',
-        initialReply: 'Yth. Bapak/Ibu Erick Bsett,',
-        initialStatus: 'terkirim',
-      ),
-      BalasLogModel(
-        id: '4',
-        date: '27 Jul 2026',
-        reviewerName: 'Amelia Vieta',
-        rating: 5.0,
-        reviewText: 'Pelayanan baik dan telaten',
-        initialReply: 'Yth. Bapak/Ibu Amelia Vieta,',
-        initialStatus: 'terkirim',
-      ),
-      BalasLogModel(
-        id: '5',
-        date: '27 Jul 2026',
-        reviewerName: 'nurul yaqinbinahmad',
-        rating: 5.0,
-        reviewText: 'Fasilitas bersih dan lengkap, pelayanan ramah.',
-        initialReply: 'Yth. Bapak/Ibu nurul yaqinbinahmad,',
-        initialStatus: 'terkirim',
-      ),
-      BalasLogModel(
-        id: '6',
-        date: '15 Okt 2023',
-        reviewerName: 'Mega Puspita',
-        rating: 1.0,
-        reviewText: 'Jadwal dokter tidak sesuai jam praktek yang tertera di website.',
-        initialReply: '',
-        initialStatus: 'pending',
-      ),
-    ]);
-
-    // Set default selected month to all_months
-    if (selectedMonth.value.isEmpty) {
-      selectedMonth.value = 'all_months'.tr;
-    }
   }
 
   List<String> get availableMonths {
@@ -214,85 +310,172 @@ class BalasController extends GetxController {
       }
     });
 
-    return ['all_months'.tr, ...list];
+    return list;
   }
 
   String _getFullMonthNameByMonthIndex(int month) {
     switch (month) {
-      case 1: return 'Januari';
-      case 2: return 'Februari';
-      case 3: return 'Maret';
-      case 4: return 'April';
-      case 5: return 'Mei';
-      case 6: return 'Juni';
-      case 7: return 'Juli';
-      case 8: return 'Agustus';
-      case 9: return 'September';
-      case 10: return 'Oktober';
-      case 11: return 'November';
-      case 12: return 'Desember';
-      default: return '';
+      case 1:
+        return 'Januari';
+      case 2:
+        return 'Februari';
+      case 3:
+        return 'Maret';
+      case 4:
+        return 'April';
+      case 5:
+        return 'Mei';
+      case 6:
+        return 'Juni';
+      case 7:
+        return 'Juli';
+      case 8:
+        return 'Agustus';
+      case 9:
+        return 'September';
+      case 10:
+        return 'Oktober';
+      case 11:
+        return 'November';
+      case 12:
+        return 'Desember';
+      default:
+        return '';
     }
   }
 
   String _getFullMonthName(String abbr) {
     switch (abbr.toLowerCase()) {
-      case 'jan': return 'Januari';
-      case 'feb': return 'Februari';
-      case 'mar': return 'Maret';
-      case 'apr': return 'April';
-      case 'mei': return 'Mei';
-      case 'jun': return 'Juni';
-      case 'jul': return 'Juli';
-      case 'ags': return 'Agustus';
-      case 'sep': return 'September';
-      case 'okt': return 'Oktober';
-      case 'nov': return 'November';
-      case 'des': return 'Desember';
-      default: return abbr;
+      case 'jan':
+        return 'Januari';
+      case 'feb':
+        return 'Februari';
+      case 'mar':
+        return 'Maret';
+      case 'apr':
+        return 'April';
+      case 'mei':
+        return 'Mei';
+      case 'jun':
+        return 'Juni';
+      case 'jul':
+        return 'Juli';
+      case 'ags':
+        return 'Agustus';
+      case 'sep':
+        return 'September';
+      case 'okt':
+        return 'Oktober';
+      case 'nov':
+        return 'November';
+      case 'des':
+        return 'Desember';
+      default:
+        return abbr;
     }
   }
 
   int _getMonthIndex(String name) {
     switch (name.toLowerCase()) {
-      case 'januari': case 'jan': return 1;
-      case 'februari': case 'feb': return 2;
-      case 'maret': case 'mar': return 3;
-      case 'april': case 'apr': return 4;
-      case 'mei': case 'may': return 5;
-      case 'juni': case 'jun': return 6;
-      case 'juli': case 'jul': return 7;
-      case 'agustus': case 'ags': case 'agu': return 8;
-      case 'september': case 'sep': return 9;
-      case 'oktober': case 'okt': return 10;
-      case 'november': case 'nov': return 11;
-      case 'desember': case 'des': return 12;
-      default: return 0;
+      case 'januari':
+      case 'jan':
+        return 1;
+      case 'februari':
+      case 'feb':
+        return 2;
+      case 'maret':
+      case 'mar':
+        return 3;
+      case 'april':
+      case 'apr':
+        return 4;
+      case 'mei':
+      case 'may':
+        return 5;
+      case 'juni':
+      case 'jun':
+        return 6;
+      case 'juli':
+      case 'jul':
+        return 7;
+      case 'agustus':
+      case 'ags':
+      case 'agu':
+        return 8;
+      case 'september':
+      case 'sep':
+        return 9;
+      case 'oktober':
+      case 'okt':
+        return 10;
+      case 'november':
+      case 'nov':
+        return 11;
+      case 'desember':
+      case 'des':
+        return 12;
+      default:
+        return 0;
     }
   }
 
-  List<BalasLogModel> get filteredReplyLogs {
-    final selected = selectedMonth.value;
-    if (selected.isEmpty ||
-        selected == 'all_months'.tr ||
-        selected.toLowerCase().contains('semua') ||
-        selected.toLowerCase().contains('kabeh') ||
-        selected.toLowerCase().contains('kabbhinah')) {
-      return replyLogs;
+  List<BalasLogModel> get filteredReplyLogs =>
+      _filterLogsByMonth(replyLogs, selectedMonth.value);
+
+  // Pagination calculations
+  int get totalLogsCount => filteredReplyLogs.length;
+  int get totalPages {
+    final count = totalLogsCount;
+    if (count == 0) return 1;
+    return (count / pageSize.value).ceil();
+  }
+
+  int get startEntry {
+    if (filteredReplyLogs.isEmpty) return 0;
+    return (currentPage.value - 1) * pageSize.value + 1;
+  }
+
+  int get endEntry {
+    final calculated = currentPage.value * pageSize.value;
+    return calculated > filteredReplyLogs.length
+        ? filteredReplyLogs.length
+        : calculated;
+  }
+
+  List<BalasLogModel> get paginatedReplyLogs {
+    final logs = filteredReplyLogs;
+    final start = (currentPage.value - 1) * pageSize.value;
+    if (start >= logs.length) return [];
+    final end = (start + pageSize.value).clamp(0, logs.length);
+    return logs.sublist(start, end);
+  }
+
+  void changePage(int page) {
+    if (page >= 1 && page <= totalPages) {
+      currentPage.value = page;
     }
-    return replyLogs.where((log) {
+  }
+
+  List<BalasLogModel> _filterLogsByMonth(
+    List<BalasLogModel> logs,
+    String selected,
+  ) {
+    if (selected.isEmpty) {
+      return logs;
+    }
+    return logs.where((log) {
       final parts = log.date.split(' ');
       if (parts.length < 3) return false;
       final logMonthName = parts[1].toLowerCase();
       final logYear = parts[2];
-      
+
       final monthParts = selected.split(' ');
       if (monthParts.length < 2) return true;
       final selectedMonthName = monthParts[0].toLowerCase();
       final selectedYear = monthParts[1];
-      
+
       if (logYear != selectedYear) return false;
-      
+
       final monthMap = {
         'jan': ['jan', 'januari', 'january'],
         'feb': ['feb', 'februari', 'february'],
@@ -307,7 +490,7 @@ class BalasController extends GetxController {
         'nov': ['nov', 'november'],
         'des': ['des', 'desember', 'december'],
       };
-      
+
       final matchedList = monthMap[logMonthName] ?? [logMonthName];
       return matchedList.contains(selectedMonthName);
     }).toList();
@@ -316,289 +499,102 @@ class BalasController extends GetxController {
   Future<void> exportPdfReport() async {
     if (isExporting.value) return;
 
+    if (isLoading.value || isBackgroundLoading.value) {
+      Get.snackbar(
+        'Proses Memuat Data',
+        'Data ulasan sedang dimuat lengkap dari server. Mohon tunggu hingga seluruh data selesai dimuat sebelum mengekspor PDF.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.isDarkMode
+            ? const Color(0xFF1E222B)
+            : Colors.white.withOpacity(0.95),
+        colorText: Get.isDarkMode ? Colors.white : Colors.black,
+        icon: const Icon(Icons.hourglass_top_rounded, color: Colors.amber),
+        borderWidth: 1,
+        borderColor: Get.isDarkMode
+            ? const Color(0xFF2E3440)
+            : Colors.grey.shade200,
+        duration: const Duration(seconds: 4),
+      );
+      return;
+    }
+
     isExporting.value = true;
+    // Yield ke Flutter UI event loop agar indikator loading langsung di-render tanpa macet (ceket)
+    await Future.delayed(const Duration(milliseconds: 100));
 
     try {
-      final pdf = pw.Document();
+      // 1. Gunakan data ulasan yang sudah diambil dari memori (tanpa get ulang ke server)
       final items = filteredReplyLogs;
+      if (items.isEmpty) {
+        Get.snackbar(
+          'Export Dibatalkan',
+          'Tidak ada data ulasan untuk diekspor pada bulan yang dipilih.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Get.isDarkMode
+              ? const Color(0xFF1E222B)
+              : Colors.white.withOpacity(0.95),
+          colorText: Get.isDarkMode ? Colors.white : Colors.black,
+          icon: const Icon(Icons.warning_amber_rounded, color: Colors.amber),
+        );
+        return;
+      }
 
-      // Load Jember logo image from assets safely with exact buffer bounds
-      pw.Widget logoWidget;
+      // 2. Load logos asynchronously on main thread
+      Uint8List? logoJemberBytes;
       try {
-        final ByteData logoData = await rootBundle.load('assets/images/logo_jember.png');
-        final Uint8List logoBytes = logoData.buffer.asUint8List(
+        final ByteData logoData = await rootBundle.load(
+          'assets/images/logo_jember.png',
+        );
+        logoJemberBytes = logoData.buffer.asUint8List(
           logoData.offsetInBytes,
           logoData.lengthInBytes,
         );
-        final pw.MemoryImage logoImage = pw.MemoryImage(logoBytes);
-        logoWidget = pw.Image(
-          logoImage,
-          width: 45,
-          height: 55,
-          fit: pw.BoxFit.contain,
-        );
       } catch (e) {
-        print('Error loading logo for PDF: $e');
-        logoWidget = pw.SizedBox(width: 45, height: 55);
+        print('Error loading Jember logo for PDF: $e');
       }
 
-      final primaryColor = PdfColor.fromHex('#6366F1'); // Indigo
-      final darkColor = PdfColor.fromHex('#1E222B');
-      final greyColor = PdfColor.fromHex('#9CA3AF');
+      Uint8List? logoSoebandiBytes;
+      try {
+        final ByteData logoData = await rootBundle.load(
+          'assets/images/logo_soebandi.png',
+        );
+        logoSoebandiBytes = logoData.buffer.asUint8List(
+          logoData.offsetInBytes,
+          logoData.lengthInBytes,
+        );
+      } catch (e) {
+        print('Error loading Soebandi logo for PDF: $e');
+      }
 
-      pdf.addPage(
-        pw.MultiPage(
-          pageFormat: PdfPageFormat.a4,
-          margin: const pw.EdgeInsets.all(32),
-          footer: (context) => pw.Container(
-            alignment: pw.Alignment.centerRight,
-            margin: const pw.EdgeInsets.only(top: 10),
-            child: pw.Text(
-              'Halaman ${context.pageNumber} dari ${context.pagesCount}',
-              style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
-            ),
-          ),
-          build: (context) => [
-            // 1. Kop Surat (Official Indonesian Letterhead replica from reference)
-            pw.Column(
-              children: [
-                pw.Row(
-                  crossAxisAlignment: pw.CrossAxisAlignment.center,
-                  children: [
-                    // Official Jember Logo image aligned to left
-                    logoWidget,
-                    pw.SizedBox(width: 14),
-                    // Centered Text Blocks matching official header text hierarchy
-                    pw.Expanded(
-                      child: pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.center,
-                        mainAxisAlignment: pw.MainAxisAlignment.center,
-                        children: [
-                          pw.Text(
-                            'PEMERINTAH KABUPATEN JEMBER',
-                            style: pw.TextStyle(
-                              fontSize: 11.5,
-                              fontWeight: pw.FontWeight.bold,
-                              color: PdfColors.black,
-                            ),
-                          ),
-                          pw.Text(
-                            'DINAS KESEHATAN, PENGENDALIAN PENDUDUK',
-                            style: pw.TextStyle(
-                              fontSize: 9.5,
-                              fontWeight: pw.FontWeight.bold,
-                              color: PdfColors.black,
-                            ),
-                          ),
-                          pw.Text(
-                            'DAN KELUARGA BERENCANA',
-                            style: pw.TextStyle(
-                              fontSize: 9.5,
-                              fontWeight: pw.FontWeight.bold,
-                              color: PdfColors.black,
-                            ),
-                          ),
-                          pw.Text(
-                            'RUMAH SAKIT DAERAH dr.SOEBANDI',
-                            style: pw.TextStyle(
-                              fontSize: 13.5,
-                              fontWeight: pw.FontWeight.bold,
-                              color: PdfColors.black,
-                            ),
-                          ),
-                          pw.Text(
-                            'Jl. dr.Soebandi 124 telp. 0331-487441-422404 pswt 138 Fax. 487564',
-                            style: const pw.TextStyle(
-                              fontSize: 7.5,
-                              color: PdfColors.black,
-                            ),
-                          ),
-                          pw.Text(
-                            'JEMBER 68111',
-                            style: pw.TextStyle(
-                              fontSize: 8.5,
-                              fontWeight: pw.FontWeight.bold,
-                              color: PdfColors.black,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Right spacer to offset the left logo width and keep the text perfectly centered on page
-                    pw.SizedBox(width: 59), // 45 (logo width) + 14 (sizedbox) = 59
-                  ],
-                ),
-                pw.SizedBox(height: 6),
-                // Thick solid horizontal separator matching the reference document line
-                pw.Container(
-                  height: 2.2,
-                  color: PdfColors.black,
-                ),
-              ],
-            ),
-            pw.SizedBox(height: 16),
+      // 3. Prepare serializable item data
+      final preparedItems = items.map((item) {
+        return PdfExportItemData(
+          date: _cleanPdfText(item.date),
+          reviewerName: _cleanPdfText(item.reviewerName),
+          rating: '${item.rating.toInt()} / 5',
+          reviewText: item.reviewText.isEmpty
+              ? '-'
+              : _cleanPdfText(item.reviewText),
+          adminReply: item.adminReply.value.isEmpty
+              ? 'Belum ditanggapi'
+              : _cleanPdfText(item.adminReply.value),
+          status: _cleanPdfText(item.status.value.toUpperCase()),
+        );
+      }).toList();
 
-            // 2. Document Title
-            pw.Center(
-              child: pw.Column(
-                children: [
-                  pw.Text(
-                    'LAPORAN AUDIT LOG BALASAN',
-                    style: pw.TextStyle(
-                      fontSize: 12,
-                      fontWeight: pw.FontWeight.bold,
-                      color: darkColor,
-                    ),
-                  ),
-                  pw.Text(
-                    'Google Maps Review - Periode ${selectedMonth.value}',
-                    style: pw.TextStyle(
-                      fontSize: 9,
-                      fontWeight: pw.FontWeight.bold,
-                      color: greyColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            pw.SizedBox(height: 16),
-
-            // 3. Stats Summary Cards Row
-            pw.Row(
-              children: [
-                pw.Expanded(
-                  child: pw.Container(
-                    padding: const pw.EdgeInsets.all(8),
-                    decoration: const pw.BoxDecoration(
-                      color: PdfColors.grey100,
-                      borderRadius: pw.BorderRadius.all(pw.Radius.circular(6)),
-                    ),
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.Text(
-                          'TOTAL ULASAN',
-                          style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey600),
-                        ),
-                        pw.SizedBox(height: 2),
-                        pw.Text(
-                          '${items.length} Review',
-                          style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: darkColor),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                pw.SizedBox(width: 12),
-                pw.Expanded(
-                  child: pw.Container(
-                    padding: const pw.EdgeInsets.all(8),
-                    decoration: pw.BoxDecoration(
-                      color: PdfColor.fromHex('#E6F4EA'),
-                      borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
-                    ),
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.Text(
-                          'TERKIRIM',
-                          style: pw.TextStyle(fontSize: 7, color: PdfColor.fromHex('#137333')),
-                        ),
-                        pw.SizedBox(height: 2),
-                        pw.Text(
-                          '${items.where((i) => i.status.value == 'terkirim').length} Dibalas',
-                          style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: PdfColor.fromHex('#137333')),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                pw.SizedBox(width: 12),
-                pw.Expanded(
-                  child: pw.Container(
-                    padding: const pw.EdgeInsets.all(8),
-                    decoration: pw.BoxDecoration(
-                      color: PdfColor.fromHex('#FCE8E6'),
-                      borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
-                    ),
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.Text(
-                          'PENDING',
-                          style: pw.TextStyle(fontSize: 7, color: PdfColor.fromHex('#C5221F')),
-                        ),
-                        pw.SizedBox(height: 2),
-                        pw.Text(
-                          '${items.where((i) => i.status.value != 'terkirim').length} Ulasan',
-                          style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: PdfColor.fromHex('#C5221F')),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            pw.SizedBox(height: 16),
-
-            // 4. Table of logs with proportional column widths and top-left cell alignment
-            pw.TableHelper.fromTextArray(
-              headers: ['Tanggal', 'User Pengguna', 'Rating', 'Ulasan Pengguna', 'Balasan Admin', 'Status'],
-              data: List<List<String>>.generate(items.length, (index) {
-                final item = items[index];
-                return [
-                  _cleanPdfText(item.date),
-                  _cleanPdfText(item.reviewerName),
-                  '${item.rating.toInt()} / 5',
-                  item.reviewText.isEmpty ? '-' : _cleanPdfText(item.reviewText),
-                  item.adminReply.value.isEmpty ? 'Belum ditanggapi' : _cleanPdfText(item.adminReply.value),
-                  _cleanPdfText(item.status.value.toUpperCase()),
-                ];
-              }),
-              columnWidths: {
-                0: const pw.FixedColumnWidth(60),  // Tanggal
-                1: const pw.FixedColumnWidth(80),  // User Pengguna
-                2: const pw.FixedColumnWidth(48),  // Rating
-                3: const pw.FlexColumnWidth(2.5),  // Ulasan Pengguna
-                4: const pw.FlexColumnWidth(3.5),  // Balasan Admin
-                5: const pw.FixedColumnWidth(55),  // Status
-              },
-              headerStyle: pw.TextStyle(
-                color: PdfColors.white,
-                fontWeight: pw.FontWeight.bold,
-                fontSize: 8.5,
-              ),
-              headerDecoration: pw.BoxDecoration(
-                color: primaryColor,
-              ),
-              cellStyle: const pw.TextStyle(
-                fontSize: 7.5,
-              ),
-              cellPadding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-              cellAlignment: pw.Alignment.topLeft,
-              cellAlignments: {
-                0: pw.Alignment.topLeft,
-                1: pw.Alignment.topLeft,
-                2: pw.Alignment.topCenter,
-                3: pw.Alignment.topLeft,
-                4: pw.Alignment.topLeft,
-                5: pw.Alignment.topCenter,
-              },
-              border: pw.TableBorder(
-                horizontalInside: const pw.BorderSide(color: PdfColors.grey200, width: 0.5),
-                verticalInside: pw.BorderSide.none,
-                bottom: const pw.BorderSide(color: PdfColors.grey300, width: 0.5),
-                top: pw.BorderSide.none,
-                left: pw.BorderSide.none,
-                right: pw.BorderSide.none,
-              ),
-            ),
-          ],
-        ),
+      final taskParams = PdfExportTaskParams(
+        items: preparedItems,
+        selectedMonth: selectedMonth.value,
+        logoJemberBytes: logoJemberBytes,
+        logoSoebandiBytes: logoSoebandiBytes,
       );
 
-      final fileName = 'Laporan_Log_Balasan_${selectedMonth.value.replaceAll(' ', '_')}.pdf';
-      await saveAndDownloadFile(await pdf.save(), fileName);
+      // 4. Generate PDF bytes secara langsung (aman untuk Web dan Desktop)
+      final Uint8List pdfBytes = await _generatePdfBytesInIsolate(taskParams);
+
+      final fileName =
+          'Laporan_Log_Balasan_${selectedMonth.value.replaceAll(' ', '_')}.pdf';
+      await saveAndDownloadFile(pdfBytes, fileName);
 
       Get.snackbar(
         'Export Berhasil',
@@ -614,14 +610,15 @@ class BalasController extends GetxController {
             : Colors.grey.shade200,
         duration: const Duration(seconds: 5),
       );
-    } catch (e) {
-      print('Export PDF Error: $e');
+    } catch (e, stack) {
+      print('Export PDF Error: $e\n$stack');
       Get.snackbar(
         'Export Gagal',
         'Terjadi kesalahan saat menyimpan PDF: $e',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red.shade50,
         colorText: Colors.red.shade900,
+        duration: const Duration(seconds: 6),
       );
     } finally {
       isExporting.value = false;
@@ -656,16 +653,385 @@ class BalasController extends GetxController {
         .replaceAll('✉', '')
         .replaceAll('📍', '')
         .replaceAll('★', ' Bintang')
-        .replaceAll('⭐', ' Bintang');
+        .replaceAll('⭐', ' Bintang')
+        .replaceAll('“', '"')
+        .replaceAll('”', '"')
+        .replaceAll('‘', "'")
+        .replaceAll('’', "'")
+        .replaceAll('–', '-')
+        .replaceAll('—', '-')
+        .replaceAll('…', '...')
+        .replaceAll('•', '-')
+        .replaceAll('\u00A0', ' ');
 
     final StringBuffer buffer = StringBuffer();
     for (final char in text.runes) {
-      if (char <= 255 || char == 10 || char == 13) {
+      if ((char >= 32 && char <= 126) || char == 10 || char == 13) {
+        buffer.writeCharCode(char);
+      } else if (char >= 160 && char <= 255) {
         buffer.writeCharCode(char);
       }
     }
-    return buffer.toString().trim();
+    final result = buffer.toString().trim();
+    return result.isEmpty ? '-' : result;
   }
 }
 
+class PdfExportItemData {
+  final String date;
+  final String reviewerName;
+  final String rating;
+  final String reviewText;
+  final String adminReply;
+  final String status;
 
+  PdfExportItemData({
+    required this.date,
+    required this.reviewerName,
+    required this.rating,
+    required this.reviewText,
+    required this.adminReply,
+    required this.status,
+  });
+}
+
+class PdfExportTaskParams {
+  final List<PdfExportItemData> items;
+  final String selectedMonth;
+  final Uint8List? logoJemberBytes;
+  final Uint8List? logoSoebandiBytes;
+
+  PdfExportTaskParams({
+    required this.items,
+    required this.selectedMonth,
+    this.logoJemberBytes,
+    this.logoSoebandiBytes,
+  });
+}
+
+Future<Uint8List> _generatePdfBytesInIsolate(PdfExportTaskParams params) async {
+  final pdf = pw.Document();
+
+  pw.Widget logoJemberWidget;
+  if (params.logoJemberBytes != null && params.logoJemberBytes!.isNotEmpty) {
+    final pw.MemoryImage logoImage = pw.MemoryImage(params.logoJemberBytes!);
+    logoJemberWidget = pw.Image(
+      logoImage,
+      width: 45,
+      height: 55,
+      fit: pw.BoxFit.contain,
+    );
+  } else {
+    logoJemberWidget = pw.SizedBox(width: 45, height: 55);
+  }
+
+  pw.Widget logoSoebandiWidget;
+  if (params.logoSoebandiBytes != null && params.logoSoebandiBytes!.isNotEmpty) {
+    final pw.MemoryImage logoImage = pw.MemoryImage(params.logoSoebandiBytes!);
+    logoSoebandiWidget = pw.Image(
+      logoImage,
+      width: 45,
+      height: 55,
+      fit: pw.BoxFit.contain,
+    );
+  } else {
+    logoSoebandiWidget = pw.SizedBox(width: 45, height: 55);
+  }
+
+  final primaryColor = PdfColor.fromHex('#6366F1');
+  final darkColor = PdfColor.fromHex('#1E222B');
+  final greyColor = PdfColor.fromHex('#9CA3AF');
+
+  final items = params.items;
+
+  pdf.addPage(
+    pw.MultiPage(
+      pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.all(32),
+      maxPages: 200,
+      footer: (context) => pw.Container(
+        alignment: pw.Alignment.centerRight,
+        margin: const pw.EdgeInsets.only(top: 10),
+        child: pw.Text(
+          'Halaman ${context.pageNumber} dari ${context.pagesCount}',
+          style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
+        ),
+      ),
+      build: (context) => [
+        // 1. Kop Surat (Official Indonesian Letterhead replica)
+        pw.Column(
+          children: [
+            pw.Row(
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              children: [
+                logoJemberWidget,
+                pw.SizedBox(width: 14),
+                pw.Expanded(
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.center,
+                    mainAxisAlignment: pw.MainAxisAlignment.center,
+                    children: [
+                      pw.Text(
+                        'PEMERINTAH KABUPATEN JEMBER',
+                        style: pw.TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: pw.FontWeight.bold,
+                          color: PdfColors.black,
+                        ),
+                      ),
+                      pw.Text(
+                        'DINAS KESEHATAN, PENGENDALIAN PENDUDUK',
+                        style: pw.TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: pw.FontWeight.bold,
+                          color: PdfColors.black,
+                        ),
+                      ),
+                      pw.Text(
+                        'DAN KELUARGA BERENCANA',
+                        style: pw.TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: pw.FontWeight.bold,
+                          color: PdfColors.black,
+                        ),
+                      ),
+                      pw.Text(
+                        'RUMAH SAKIT DAERAH dr.SOEBANDI',
+                        style: pw.TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: pw.FontWeight.bold,
+                          color: PdfColors.black,
+                        ),
+                      ),
+                      pw.Text(
+                        'Jl. dr.Soebandi 124 telp. 0331-487441-422404 pswt 138 Fax. 487564',
+                        style: const pw.TextStyle(
+                          fontSize: 7.5,
+                          color: PdfColors.black,
+                        ),
+                      ),
+                      pw.Text(
+                        'JEMBER 68111',
+                        style: pw.TextStyle(
+                          fontSize: 8.5,
+                          fontWeight: pw.FontWeight.bold,
+                          color: PdfColors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                pw.SizedBox(width: 14),
+                logoSoebandiWidget,
+              ],
+            ),
+            pw.SizedBox(height: 6),
+            pw.Container(height: 2.2, color: PdfColors.black),
+          ],
+        ),
+        pw.SizedBox(height: 16),
+
+        // 2. Document Title
+        pw.Center(
+          child: pw.Column(
+            children: [
+              pw.Text(
+                'LAPORAN AUDIT LOG BALASAN',
+                style: pw.TextStyle(
+                  fontSize: 12,
+                  fontWeight: pw.FontWeight.bold,
+                  color: darkColor,
+                ),
+              ),
+              pw.Text(
+                'Google Maps Review - Periode ${params.selectedMonth}',
+                style: pw.TextStyle(
+                  fontSize: 9,
+                  fontWeight: pw.FontWeight.bold,
+                  color: greyColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+        pw.SizedBox(height: 16),
+
+        // 3. Stats Summary Cards Row
+        pw.Row(
+          children: [
+            pw.Expanded(
+              child: pw.Container(
+                padding: const pw.EdgeInsets.all(8),
+                decoration: const pw.BoxDecoration(
+                  color: PdfColors.grey100,
+                  borderRadius: pw.BorderRadius.all(pw.Radius.circular(6)),
+                ),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      'TOTAL ULASAN',
+                      style: const pw.TextStyle(
+                        fontSize: 7,
+                        color: PdfColors.grey600,
+                      ),
+                    ),
+                    pw.SizedBox(height: 2),
+                    pw.Text(
+                      '${items.length} Review',
+                      style: pw.TextStyle(
+                        fontSize: 11,
+                        fontWeight: pw.FontWeight.bold,
+                        color: darkColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            pw.SizedBox(width: 12),
+            pw.Expanded(
+              child: pw.Container(
+                padding: const pw.EdgeInsets.all(8),
+                decoration: pw.BoxDecoration(
+                  color: PdfColor.fromHex('#E6F4EA'),
+                  borderRadius: const pw.BorderRadius.all(
+                    pw.Radius.circular(6),
+                  ),
+                ),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      'TERKIRIM',
+                      style: pw.TextStyle(
+                        fontSize: 7,
+                        color: PdfColor.fromHex('#137333'),
+                      ),
+                    ),
+                    pw.SizedBox(height: 2),
+                    pw.Text(
+                      '${items.where((i) => i.status == 'TERKIRIM').length} Dibalas',
+                      style: pw.TextStyle(
+                        fontSize: 11,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PdfColor.fromHex('#137333'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            pw.SizedBox(width: 12),
+            pw.Expanded(
+              child: pw.Container(
+                padding: const pw.EdgeInsets.all(8),
+                decoration: pw.BoxDecoration(
+                  color: PdfColor.fromHex('#FCE8E6'),
+                  borderRadius: const pw.BorderRadius.all(
+                    pw.Radius.circular(6),
+                  ),
+                ),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      'PENDING',
+                      style: pw.TextStyle(
+                        fontSize: 7,
+                        color: PdfColor.fromHex('#C5221F'),
+                      ),
+                    ),
+                    pw.SizedBox(height: 2),
+                    pw.Text(
+                      '${items.where((i) => i.status != 'TERKIRIM').length} Ulasan',
+                      style: pw.TextStyle(
+                        fontSize: 11,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PdfColor.fromHex('#C5221F'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        pw.SizedBox(height: 16),
+
+        // 4. Table of logs
+        pw.TableHelper.fromTextArray(
+          headers: [
+            'Tanggal',
+            'User Pengguna',
+            'Rating',
+            'Ulasan Pengguna',
+            'Balasan Admin',
+            'Status',
+          ],
+          data: List<List<String>>.generate(items.length, (index) {
+            final item = items[index];
+            final cleanRev = item.reviewText;
+            final cleanReply = item.adminReply;
+            return [
+              item.date,
+              item.reviewerName,
+              item.rating,
+              cleanRev.length > 250
+                  ? '${cleanRev.substring(0, 250)}...'
+                  : cleanRev,
+              cleanReply.length > 300
+                  ? '${cleanReply.substring(0, 300)}...'
+                  : cleanReply,
+              item.status,
+            ];
+          }),
+          columnWidths: {
+            0: const pw.FixedColumnWidth(60), // Tanggal
+            1: const pw.FixedColumnWidth(80), // User Pengguna
+            2: const pw.FixedColumnWidth(48), // Rating
+            3: const pw.FlexColumnWidth(2.5), // Ulasan Pengguna
+            4: const pw.FlexColumnWidth(3.5), // Balasan Admin
+            5: const pw.FixedColumnWidth(55), // Status
+          },
+          headerStyle: pw.TextStyle(
+            color: PdfColors.white,
+            fontWeight: pw.FontWeight.bold,
+            fontSize: 8.5,
+          ),
+          headerDecoration: pw.BoxDecoration(color: primaryColor),
+          cellStyle: const pw.TextStyle(fontSize: 7.5),
+          cellPadding: const pw.EdgeInsets.symmetric(
+            horizontal: 6,
+            vertical: 8,
+          ),
+          cellAlignment: pw.Alignment.topLeft,
+          cellAlignments: {
+            0: pw.Alignment.topLeft,
+            1: pw.Alignment.topLeft,
+            2: pw.Alignment.topCenter,
+            3: pw.Alignment.topLeft,
+            4: pw.Alignment.topLeft,
+            5: pw.Alignment.topCenter,
+          },
+          border: pw.TableBorder(
+            horizontalInside: const pw.BorderSide(
+              color: PdfColors.grey200,
+              width: 0.5,
+            ),
+            verticalInside: pw.BorderSide.none,
+            bottom: const pw.BorderSide(
+              color: PdfColors.grey300,
+              width: 0.5,
+            ),
+            top: pw.BorderSide.none,
+            left: pw.BorderSide.none,
+            right: pw.BorderSide.none,
+          ),
+        ),
+      ],
+    ),
+  );
+
+  return pdf.save();
+}

@@ -36,6 +36,51 @@ class BalasTableComponent extends GetView<BalasController> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      // Loading indicator badge saat background fetch berjalan
+                      Obx(() {
+                        if (!controller.isBackgroundLoading.value) {
+                          return const SizedBox.shrink();
+                        }
+                        return Container(
+                          margin: const EdgeInsets.only(right: 10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: theme.colorScheme.primary.withOpacity(0.25),
+                              width: 0.8,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 10,
+                                height: 10,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 1.8,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    theme.colorScheme.primary,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Memuat sisa data...',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: theme.colorScheme.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
                       // Month Picker Selector
                       _buildMonthDropdown(context, theme, isDark),
                       const SizedBox(width: 12),
@@ -51,6 +96,18 @@ class BalasTableComponent extends GetView<BalasController> {
             height: 1,
             color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
           ),
+          Obx(() {
+            if (controller.isBackgroundLoading.value) {
+              return LinearProgressIndicator(
+                minHeight: 2,
+                backgroundColor: Colors.transparent,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  theme.colorScheme.primary.withOpacity(0.7),
+                ),
+              );
+            }
+            return const SizedBox(height: 2);
+          }),
 
           // 2. Scrollable Spreadsheet Table (responsive width based on constraints)
           Expanded(
@@ -84,11 +141,14 @@ class BalasTableComponent extends GetView<BalasController> {
                                 ),
                               );
                             }
-                            final items = controller.filteredReplyLogs;
+                            final items = controller.paginatedReplyLogs;
                             if (items.isEmpty) {
                               return _buildEmptyState(isDark);
                             }
                             return ListView.separated(
+                              addAutomaticKeepAlives: false,
+                              addRepaintBoundaries: true,
+                              cacheExtent: 250,
                               itemCount: items.length,
                               separatorBuilder: (context, index) => Divider(
                                 height: 1,
@@ -110,6 +170,7 @@ class BalasTableComponent extends GetView<BalasController> {
               },
             ),
           ),
+          _buildPaginationRow(theme, isDark),
         ],
       ),
     );
@@ -178,29 +239,55 @@ class BalasTableComponent extends GetView<BalasController> {
   Widget _buildExportButton(ThemeData theme, bool isDark) {
     return Obx(() {
       final isExporting = controller.isExporting.value;
+      final isBgLoading = controller.isBackgroundLoading.value;
       return SizedBox(
         height: 30,
         child: ElevatedButton.icon(
           onPressed: isExporting ? null : () => controller.exportPdfReport(),
           icon: isExporting
-              ? const SizedBox(
-                  width: 10,
-                  height: 10,
+              ? SizedBox(
+                  width: 12,
+                  height: 12,
                   child: CircularProgressIndicator(
-                    strokeWidth: 1.5,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      theme.colorScheme.primary,
+                    ),
                   ),
                 )
-              : const Icon(Icons.download_rounded, size: 12),
+              : Icon(
+                  isBgLoading
+                      ? Icons.hourglass_top_rounded
+                      : Icons.download_rounded,
+                  size: 12,
+                  color: isBgLoading ? Colors.amber.shade700 : null,
+                ),
           label: Text(
-            isExporting ? 'Exporting...' : 'export_pdf'.tr,
-            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+            isExporting
+                ? 'Exporting...'
+                : (isBgLoading ? 'Memuat Data...' : 'export_pdf'.tr),
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: isExporting
+                  ? theme.colorScheme.primary
+                  : (isBgLoading ? Colors.amber.shade700 : null),
+            ),
           ),
           style: ElevatedButton.styleFrom(
             backgroundColor: isDark ? const Color(0xFF1E222B) : Colors.white,
             foregroundColor: isDark ? Colors.white : Colors.grey.shade800,
+            disabledBackgroundColor:
+                isDark ? const Color(0xFF1E222B) : Colors.white,
+            disabledForegroundColor: theme.colorScheme.primary,
             side: BorderSide(
-              color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade300,
+              color: isExporting
+                  ? theme.colorScheme.primary.withOpacity(0.5)
+                  : (isBgLoading
+                      ? Colors.amber.withOpacity(0.6)
+                      : (isDark
+                          ? const Color(0xFF2E3440)
+                          : Colors.grey.shade300)),
               width: 0.8,
             ),
             elevation: 0,
@@ -406,6 +493,219 @@ class BalasTableComponent extends GetView<BalasController> {
       builder: (context) {
         return UserProfileDialog(logItem: item);
       },
+    );
+  }
+
+  Widget _buildPaginationRow(ThemeData theme, bool isDark) {
+    return Obx(() {
+      final total = controller.totalLogsCount;
+      final start = controller.startEntry;
+      final end = controller.endEntry;
+      final current = controller.currentPage.value;
+      final pages = controller.totalPages;
+      final isBgLoading = controller.isBackgroundLoading.value;
+
+      final List<Widget> pageButtons = [];
+      const int maxButtons = 5;
+
+      if (pages <= maxButtons) {
+        for (int i = 1; i <= pages; i++) {
+          pageButtons.add(_buildPageNumberButton(i, current, theme, isDark));
+        }
+      } else {
+        pageButtons.add(_buildPageNumberButton(1, current, theme, isDark));
+
+        int startRange = current - 1;
+        int endRange = current + 1;
+
+        if (current <= 3) {
+          startRange = 2;
+          endRange = 4;
+        } else if (current >= pages - 2) {
+          startRange = pages - 3;
+          endRange = pages - 1;
+        }
+
+        if (startRange > 2) {
+          pageButtons.add(_buildEllipsis(isDark));
+        }
+
+        for (int i = startRange; i <= endRange; i++) {
+          if (i > 1 && i < pages) {
+            pageButtons.add(_buildPageNumberButton(i, current, theme, isDark));
+          }
+        }
+
+        if (endRange < pages - 1) {
+          pageButtons.add(_buildEllipsis(isDark));
+        }
+
+        pageButtons.add(_buildPageNumberButton(pages, current, theme, isDark));
+      }
+
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
+              width: 1,
+            ),
+          ),
+        ),
+        child: Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 12,
+          runSpacing: 8,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Menampilkan $start - $end dari $total ulasan',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey.shade500,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                if (isBgLoading) ...[
+                  const SizedBox(width: 8),
+                  const SizedBox(
+                    width: 12,
+                    height: 12,
+                    child: CircularProgressIndicator(strokeWidth: 1.8),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Memuat sisa data...',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontStyle: FontStyle.italic,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildPaginationButton(
+                    icon: Icons.keyboard_arrow_left_rounded,
+                    enabled: current > 1,
+                    isDark: isDark,
+                    onTap: () => controller.changePage(current - 1),
+                  ),
+                  const SizedBox(width: 4),
+                  ...pageButtons,
+                  const SizedBox(width: 4),
+                  _buildPaginationButton(
+                    icon: Icons.keyboard_arrow_right_rounded,
+                    enabled: current < pages,
+                    isDark: isDark,
+                    onTap: () => controller.changePage(current + 1),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildPageNumberButton(
+    int pageNum,
+    int current,
+    ThemeData theme,
+    bool isDark,
+  ) {
+    final isSelected = pageNum == current;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 2),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: isSelected ? null : () => controller.changePage(pageNum),
+          borderRadius: BorderRadius.circular(6),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? theme.colorScheme.primary
+                  : (isDark ? const Color(0xFF1E222B) : Colors.white),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(
+                color: isSelected
+                    ? theme.colorScheme.primary
+                    : (isDark ? const Color(0xFF2E3440) : Colors.grey.shade300),
+                width: 0.8,
+              ),
+            ),
+            child: Text(
+              '$pageNum',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected
+                    ? Colors.white
+                    : (isDark ? Colors.grey.shade300 : Colors.grey.shade700),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPaginationButton({
+    required IconData icon,
+    required bool enabled,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          padding: const EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E222B) : Colors.white,
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade300,
+              width: 0.8,
+            ),
+          ),
+          child: Icon(
+            icon,
+            size: 14,
+            color: enabled
+                ? (isDark ? Colors.white : Colors.black87)
+                : Colors.grey.shade400,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEllipsis(bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Text(
+        '...',
+        style: TextStyle(
+          fontSize: 11,
+          color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
+        ),
+      ),
     );
   }
 }
