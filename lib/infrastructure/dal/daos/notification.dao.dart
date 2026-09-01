@@ -16,9 +16,9 @@ class NotificationDao extends ApiService {
       '/api/notifications',
       query: query.isNotEmpty ? query : null,
       decoder: (data) {
-        print(
-          'NotificationDao.getNotifications: decoder received data of type ${data.runtimeType}: $data',
-        );
+        // print(
+        //   'NotificationDao.getNotifications: decoder received data of type ${data.runtimeType}: $data',
+        // );
         dynamic decoded = data;
         if (data is String) {
           try {
@@ -49,34 +49,71 @@ class NotificationDao extends ApiService {
     );
   }
 
-  // Get unread notification count
-  Future<Response<int>> getUnreadCount() async {
+  // Get unread notification count via GET /api/notifications?limit={limit}&unread_only=true
+  Future<Response<int>> getUnreadCount({int? limit}) async {
+    final query = <String, dynamic>{
+      if (limit != null) 'limit': limit.toString(),
+      'unread_only': 'true',
+    };
+
     return await getRequest<int>(
-      '/api/notifications/unread-count',
+      '/api/notifications',
+      query: query,
       decoder: (data) {
-        print(
-          'NotificationDao.getUnreadCount: decoder received data of type ${data.runtimeType}: $data',
-        );
+        // print(
+        //   'NotificationDao.getUnreadCount: decoder received data of type ${data.runtimeType}: $data',
+        // );
         dynamic decoded = data;
         if (data is String) {
           try {
             decoded = jsonDecode(data);
           } catch (e) {
-            print('NotificationDao.getUnreadCount: jsonDecode error: $e');
+            // print('NotificationDao.getUnreadCount: jsonDecode error: $e');
           }
         }
         if (decoded is Map) {
           final dataVal = decoded['data'];
           if (dataVal is Map) {
-            final count = dataVal['unread_count'] ?? dataVal['unreadCount'] ?? dataVal['count'];
+            final metaVal = dataVal['meta'];
+            if (metaVal is Map) {
+              final total =
+                  metaVal['total_items'] ??
+                  metaVal['totalItems'] ??
+                  metaVal['count'];
+              if (total is num) return total.toInt();
+              if (total != null) return int.tryParse(total.toString()) ?? 0;
+            }
+            final count =
+                dataVal['unread_count'] ??
+                dataVal['unreadCount'] ??
+                dataVal['count'];
             if (count is num) return count.toInt();
             if (count != null) return int.tryParse(count.toString()) ?? 0;
+
+            final itemsList = dataVal['items'];
+            if (itemsList is List) return itemsList.length;
+          } else if (dataVal is List) {
+            return dataVal.length;
           } else if (dataVal is num) {
             return dataVal.toInt();
           } else if (dataVal is String) {
             return int.tryParse(dataVal) ?? 0;
           }
-          final countTop = decoded['unread_count'] ?? decoded['unreadCount'] ?? decoded['count'];
+
+          final metaTop = decoded['meta'];
+          if (metaTop is Map) {
+            final total =
+                metaTop['total_items'] ??
+                metaTop['totalItems'] ??
+                metaTop['count'];
+            if (total is num) return total.toInt();
+            if (total != null) return int.tryParse(total.toString()) ?? 0;
+          }
+
+          final countTop =
+              decoded['unread_count'] ??
+              decoded['unreadCount'] ??
+              decoded['count'];
           if (countTop is num) return countTop.toInt();
           if (countTop != null) return int.tryParse(countTop.toString()) ?? 0;
         }
@@ -160,7 +197,9 @@ class NotificationDao extends ApiService {
   }
 
   // Subscribe device for push notifications
-  Future<Response<bool>> subscribeDevice(PushSubscriptionCreate subscription) async {
+  Future<Response<bool>> subscribeDevice(
+    PushSubscriptionCreate subscription,
+  ) async {
     return await postRequest<bool>(
       '/api/notifications/subscribe',
       subscription.toJson(),
@@ -209,4 +248,3 @@ class NotificationDao extends ApiService {
     );
   }
 }
-

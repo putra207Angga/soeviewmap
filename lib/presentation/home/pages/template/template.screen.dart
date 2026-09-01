@@ -104,7 +104,7 @@ class TemplateScreen extends GetView<TemplateController> {
 
                 // 3. Scrollable Templates Container (Fit on 16-inch screen)
                 SizedBox(
-                  height: 310,
+                  height: context.width > 600 ? 560 : 440,
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
                     child: Column(

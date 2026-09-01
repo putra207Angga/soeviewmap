@@ -84,6 +84,36 @@ class BalasController extends GetxController {
     currentPage.value = 1;
   }
 
+  String? get currentMonthDateFrom {
+    final selected = selectedMonth.value;
+    if (selected.isEmpty) return null;
+    final parts = selected.split(' ');
+    if (parts.length < 2) return null;
+    final monthIdx = _getMonthIndex(parts[0]);
+    final year = int.tryParse(parts[1]);
+    if (monthIdx <= 0 || year == null) return null;
+
+    final firstDay = DateTime(year, monthIdx, 1);
+    final mStr = firstDay.month.toString().padLeft(2, '0');
+    final dStr = firstDay.day.toString().padLeft(2, '0');
+    return '${firstDay.year}-$mStr-$dStr';
+  }
+
+  String? get currentMonthDateTo {
+    final selected = selectedMonth.value;
+    if (selected.isEmpty) return null;
+    final parts = selected.split(' ');
+    if (parts.length < 2) return null;
+    final monthIdx = _getMonthIndex(parts[0]);
+    final year = int.tryParse(parts[1]);
+    if (monthIdx <= 0 || year == null) return null;
+
+    final lastDay = DateTime(year, monthIdx + 1, 0);
+    final mStr = lastDay.month.toString().padLeft(2, '0');
+    final dStr = lastDay.day.toString().padLeft(2, '0');
+    return '${lastDay.year}-$mStr-$dStr';
+  }
+
   Future<void> fetchReplyLogs({bool showSnackbar = false}) async {
     final fetchToken = ++_currentFetchToken;
     isLoading.value = true;
@@ -91,22 +121,37 @@ class BalasController extends GetxController {
     currentPage.value = 1;
 
     try {
-      String? apiTimeRange;
-      final selected = selectedMonth.value;
-      if (selected.isNotEmpty) {
-        apiTimeRange = selected;
-      }
+      final dateFrom = currentMonthDateFrom;
+      final dateTo = currentMonthDateTo;
 
       int page = 1;
-      const int pageFetchSize = 5;
+      const int pageFetchSize = 20;
       bool hasMorePages = true;
 
-      // 1. Fetch halaman pertama (5 items) terlebih dahulu untuk responsivitas UI
-      final firstResponse = await ReviewDao.use.getReviews(
-        timeRange: apiTimeRange,
+      // 1. Fetch halaman pertama dengan parameter date_from dan date_to sesuai spesifikasi OpenAPI
+      var firstResponse = await ReviewDao.use.getReviews(
+        dateFrom: dateFrom,
+        dateTo: dateTo,
         page: page,
         pageSize: pageFetchSize,
       );
+
+      // Fallback: Jika request dengan date_from & date_to spesifik tidak mengembalikan data,
+      // coba ambil tanpa filter date_from/date_to agar _filterLogsByMonth di sisi klien dapat menyaring ulasan.
+      if ((firstResponse.statusCode != 200 ||
+              firstResponse.body == null ||
+              firstResponse.body!.items.isEmpty) &&
+          (dateFrom != null || dateTo != null)) {
+        final fallbackResponse = await ReviewDao.use.getReviews(
+          page: page,
+          pageSize: pageFetchSize,
+        );
+        if (fallbackResponse.statusCode == 200 &&
+            fallbackResponse.body != null &&
+            fallbackResponse.body!.items.isNotEmpty) {
+          firstResponse = fallbackResponse;
+        }
+      }
 
       if (fetchToken != _currentFetchToken) return;
 
@@ -131,9 +176,12 @@ class BalasController extends GetxController {
           initialBatch.addAll(mapped);
         }
 
-        if (initialBatch.length >= meta.totalItems || meta.totalItems <= 0) {
-          hasMorePages = false;
-        } else if (apiReviews.length < pageFetchSize) {
+        // Hentikan pemuatan jika data kosong (totalItems/totalPages <= 0) atau halaman pertama sudah mencakup seluruh data (page >= meta.totalPages)
+        if (meta.totalItems <= 0 ||
+            meta.totalPages <= 0 ||
+            page >= meta.totalPages ||
+            apiReviews.isEmpty ||
+            initialBatch.length >= meta.totalItems) {
           hasMorePages = false;
         } else {
           page++;
@@ -142,11 +190,11 @@ class BalasController extends GetxController {
         hasMorePages = false;
       }
 
-      // Langsung tampilkan 5 ulasan pertama ke UI!
+      // Langsung tampilkan ulasan pertama ke UI!
       replyLogs.assignAll(initialBatch);
       isLoading.value = false;
 
-      // 2. Jika masih ada halaman berikutnya, teruskan ambil data di background sampai totalItems tercapai
+      // 2. Jika masih ada halaman berikutnya (page < meta.totalPages dan totalItems > loaded), teruskan ambil data di background
       if (hasMorePages) {
         isBackgroundLoading.value = true;
         final existingIds = initialBatch.map((e) => e.id).toSet();
@@ -158,7 +206,8 @@ class BalasController extends GetxController {
           }
 
           final response = await ReviewDao.use.getReviews(
-            timeRange: apiTimeRange,
+            dateFrom: dateFrom,
+            dateTo: dateTo,
             page: page,
             pageSize: pageFetchSize,
           );
@@ -203,10 +252,12 @@ class BalasController extends GetxController {
               hasMorePages = false;
             }
 
-            // Hentikan pemuatan secara eksplisit jika jumlah item yang telah dimuat mencapai meta.totalItems
-            if (replyLogs.length >= meta.totalItems || meta.totalItems <= 0) {
-              hasMorePages = false;
-            } else if (apiReviews.length < pageFetchSize) {
+            // Batas pemuatan data: Hentikan secara eksplisit jika page >= meta.totalPages, totalItems <= 0, atau replyLogs mencapai meta.totalItems
+            if (meta.totalItems <= 0 ||
+                meta.totalPages <= 0 ||
+                page >= meta.totalPages ||
+                replyLogs.length >= meta.totalItems ||
+                apiReviews.length < pageFetchSize) {
               hasMorePages = false;
             } else {
               page++;
@@ -217,11 +268,6 @@ class BalasController extends GetxController {
         }
 
         isBackgroundLoading.value = false;
-      }
-
-      final months = availableMonths;
-      if (months.isNotEmpty && !months.contains(selectedMonth.value)) {
-        selectedMonth.value = months.first;
       }
 
       if (showSnackbar) {
@@ -496,6 +542,81 @@ class BalasController extends GetxController {
     }).toList();
   }
 
+  void _showExportProgressDialog(int count, String month) {
+    Get.dialog(
+      PopScope(
+        canPop: false,
+        child: Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          backgroundColor: Get.isDarkMode ? const Color(0xFF1E222B) : Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6366F1).withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 3,
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Sedang Mengekspor Laporan PDF',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Get.isDarkMode ? Colors.white : Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Mengolah $count ulasan untuk periode $month...',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Get.isDarkMode
+                        ? const Color(0xFF13151A)
+                        : const Color(0xFFF3F4F6),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.sync_rounded, size: 14, color: Color(0xFF6366F1)),
+                      SizedBox(width: 6),
+                      Text(
+                        'Mohon tunggu sebentar, berkas akan otomatis terunduh',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF6366F1),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
   Future<void> exportPdfReport() async {
     if (isExporting.value) return;
 
@@ -538,6 +659,10 @@ class BalasController extends GetxController {
         );
         return;
       }
+
+      // Tampilkan Dialog Progress Interaktif agar Pengguna Tahu Proses Berjalan Aktif
+      _showExportProgressDialog(items.length, selectedMonth.value);
+      await Future.delayed(const Duration(milliseconds: 150));
 
       // 2. Load logos asynchronously on main thread
       Uint8List? logoJemberBytes;
@@ -589,12 +714,20 @@ class BalasController extends GetxController {
         logoSoebandiBytes: logoSoebandiBytes,
       );
 
+      // Yield UI event loop agar dialog progress dapat di-paint sebelum proses berat
+      await Future.delayed(const Duration(milliseconds: 100));
+
       // 4. Generate PDF bytes secara langsung (aman untuk Web dan Desktop)
       final Uint8List pdfBytes = await _generatePdfBytesInIsolate(taskParams);
 
       final fileName =
           'Laporan_Log_Balasan_${selectedMonth.value.replaceAll(' ', '_')}.pdf';
       await saveAndDownloadFile(pdfBytes, fileName);
+
+      // Tutup dialog progress
+      if (Get.isDialogOpen == true) {
+        Get.back();
+      }
 
       Get.snackbar(
         'Export Berhasil',
@@ -604,6 +737,7 @@ class BalasController extends GetxController {
             ? const Color(0xFF1E222B)
             : Colors.white.withOpacity(0.95),
         colorText: Get.isDarkMode ? Colors.white : Colors.black,
+        icon: const Icon(Icons.check_circle_rounded, color: Colors.green),
         borderWidth: 1,
         borderColor: Get.isDarkMode
             ? const Color(0xFF2E3440)
@@ -611,6 +745,9 @@ class BalasController extends GetxController {
         duration: const Duration(seconds: 5),
       );
     } catch (e, stack) {
+      if (Get.isDialogOpen == true) {
+        Get.back();
+      }
       print('Export PDF Error: $e\n$stack');
       Get.snackbar(
         'Export Gagal',

@@ -8,6 +8,8 @@ class ReviewDao extends ApiService {
     String? timeRange,
     int? rating,
     String? sentiment,
+    String? dateFrom,
+    String? dateTo,
     int? limit,
     int? page,
     int? pageSize,
@@ -17,6 +19,8 @@ class ReviewDao extends ApiService {
     if (timeRange != null) query['time_range'] = timeRange;
     if (rating != null) query['rating'] = rating.toString();
     if (sentiment != null) query['sentiment'] = sentiment;
+    if (dateFrom != null) query['date_from'] = dateFrom;
+    if (dateTo != null) query['date_to'] = dateTo;
     if (limit != null) query['limit'] = limit.toString();
     if (page != null) query['page'] = page.toString();
     if (pageSize != null) query['page_size'] = pageSize.toString();

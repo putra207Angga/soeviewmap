@@ -95,6 +95,14 @@ class ReviewController extends GetxController {
 
       if (response.statusCode == 200 && response.body != null) {
         meta.value = response.body!.meta;
+        if (meta.value != null) {
+          if (meta.value!.totalPages > 0 &&
+              currentPage.value > meta.value!.totalPages) {
+            currentPage.value = meta.value!.totalPages;
+          } else if (meta.value!.totalPages == 0) {
+            currentPage.value = 1;
+          }
+        }
         final List<dom.ReviewModel> apiReviews = response.body!.items;
         final mappedReviews = apiReviews.map((item) {
           return ReviewUiModel.formReviewModel(

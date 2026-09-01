@@ -275,6 +275,17 @@ class Sidebar extends GetView<HomeController> {
 
           // Bottom Utilities
           _buildUtilityItem(
+            icon: Icons.help_outline_rounded,
+            label: 'Panduan & Tutorial',
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => const HelperTutorialDialog(),
+              );
+            },
+            context: context,
+          ),
+          _buildUtilityItem(
             icon: Icons.lock_outline_rounded,
             label: 'lock_screen'.tr,
             onTap: onLockScreenPressed,

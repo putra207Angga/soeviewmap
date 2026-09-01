@@ -95,7 +95,9 @@ class HomeController extends GetxController {
 
   Future<void> fetchUnreadCount() async {
     try {
-      final response = await NotificationDao.use.getUnreadCount();
+      final response = await NotificationDao.use.getUnreadCount(
+        limit: notificationLimit.value,
+      );
       if (response.statusCode == 200 && response.body != null) {
         unreadCount.value = response.body!;
       }
@@ -134,7 +136,9 @@ class HomeController extends GetxController {
   Future<void> markAllNotificationsAsRead() async {
     try {
       final response = await NotificationDao.use.markAllAsRead();
-      if (response.statusCode == 200 && response.body == true) {
+      if (response.statusCode == 200 ||
+          response.statusCode == 204 ||
+          response.body == true) {
         for (var i = 0; i < notifications.length; i++) {
           final oldNotif = notifications[i];
           if (!oldNotif.isRead) {
@@ -153,6 +157,10 @@ class HomeController extends GetxController {
         }
         notifications.refresh();
         unreadCount.value = 0;
+
+        // Re-fetch notifications and unread count from /api/notifications?limit={limit}&unread_only=true
+        await fetchNotifications();
+        await fetchUnreadCount();
       }
     } catch (e) {
       print('HomeController: markAllNotificationsAsRead exception: $e');
@@ -239,6 +247,7 @@ class HomeController extends GetxController {
 
     // Refresh notifications with new limit
     fetchNotifications();
+    fetchUnreadCount();
 
     Get.back();
     Get.snackbar(

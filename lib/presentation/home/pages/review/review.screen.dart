@@ -24,9 +24,9 @@ class ReviewScreen extends GetView<ReviewController> {
                 children: [
                   const ReviewFiltersPanel(),
                   const SizedBox(height: 10),
-                  const SizedBox(
-                    height: 320,
-                    child: ReviewTableComponent(),
+                  SizedBox(
+                    height: context.width > 600 ? 540 : 440,
+                    child: const ReviewTableComponent(),
                   ),
                   const SizedBox(height: 10),
                   const ReviewAnalyticsPanel(),

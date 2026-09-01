@@ -29,9 +29,9 @@ class LogBotScreen extends GetView<LogBotController> {
                   const SizedBox(height: 10),
                   const LogBotMetricsPanel(),
                   const SizedBox(height: 10),
-                  const SizedBox(
-                    height: 280,
-                    child: LogBotConsolePanel(),
+                  SizedBox(
+                    height: context.width > 600 ? 520 : 400,
+                    child: const LogBotConsolePanel(),
                   ),
                 ],
               ),

@@ -42,12 +42,12 @@ class ApiService extends GetConnect implements GetxService {
         query: query,
         decoder: decoder,
       );
-      // print(
-      //   'ApiService: GET Response status: ${response.statusCode}, body: ${response.body}',
-      // );
+      print(
+        'ApiService: ${httpClient.baseUrl}$url GET Response query: $query, header: $headers, status: ${response.statusCode}, body: ${response.body}',
+      );
       return response;
     } catch (e) {
-      // print('ApiService: GET Request failed with exception: $e');
+      // print('ApiService:  GET Request failed with exception: $e');
       return Response<T>(statusCode: 500, statusText: e.toString());
     }
   }
