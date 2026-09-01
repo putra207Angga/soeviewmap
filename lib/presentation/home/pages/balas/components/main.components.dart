@@ -1,6 +1,5 @@
 import '../../../components/main.components.dart';
-import '../../main.pages.dart';
-
+import 'package:soeviewmap/presentation/screens.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

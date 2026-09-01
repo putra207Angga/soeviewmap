@@ -1,14 +1,18 @@
 import 'infrastructure/main.infrastructures.dart';
 
 import 'package:flutter/material.dart';
-
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-
 import 'package:flutter_web_plugins/url_strategy.dart';
 
 void main() async {
-  usePathUrlStrategy();
   WidgetsFlutterBinding.ensureInitialized();
+  usePathUrlStrategy();
+
+  // Disable screen rotation / landscape mode on smartphone devices
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
   // Initialize SecureStorageServices and load env keys before other services
   Get.put<SecureStorageServices>(SecureStorageServices(), permanent: true);
   // Register ConfigEnvironments after SecureStorage loads keys
@@ -52,6 +56,9 @@ class Main extends StatelessWidget {
       ),
       initialRoute: initialRoute,
       getPages: Nav.routes,
+      translations: AppTranslation(),
+      locale: TranslationService.getSavedLocale(),
+      fallbackLocale: const Locale('id', 'ID'),
     );
   }
 }

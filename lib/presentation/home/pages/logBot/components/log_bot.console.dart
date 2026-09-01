@@ -41,7 +41,7 @@ class LogBotConsolePanel extends GetView<LogBotController> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'AUDIT LOG CONSOLE',
+                      'audit_log_console'.tr,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -54,7 +54,7 @@ class LogBotConsolePanel extends GetView<LogBotController> {
                 Obx(() {
                   final count = controller.filteredLogs.length;
                   return Text(
-                    '$count events',
+                    '$count ${"events_count".tr}',
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.grey.shade500,
@@ -86,7 +86,7 @@ class LogBotConsolePanel extends GetView<LogBotController> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Tidak ada log ditemukan',
+                          'no_logs_found'.tr,
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
@@ -180,8 +180,15 @@ class LogBotConsolePanel extends GetView<LogBotController> {
         break;
     }
 
+    final labelMap = {
+      'SUCCESS': 'level_success'.tr.toUpperCase(),
+      'INFO': 'level_info'.tr.toUpperCase(),
+      'WARNING': 'level_warning'.tr.toUpperCase(),
+      'ERROR': 'level_error'.tr.toUpperCase(),
+    };
+
     return Container(
-      width: 72,
+      width: 76,
       alignment: Alignment.center,
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       decoration: BoxDecoration(
@@ -190,7 +197,7 @@ class LogBotConsolePanel extends GetView<LogBotController> {
         border: Border.all(color: color.withOpacity(0.3), width: 1),
       ),
       child: Text(
-        level.toUpperCase(),
+        labelMap[level.toUpperCase()] ?? level.toUpperCase(),
         style: TextStyle(
           fontSize: 9,
           fontWeight: FontWeight.w900,

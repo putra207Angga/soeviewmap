@@ -6,20 +6,22 @@ class MobileHome extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Scaffold(
       extendBody: true,
       endDrawer: const SettingsDrawer(),
       appBar: AppBar(
-        backgroundColor: Colors.white.withOpacity(0.9),
+        backgroundColor: isDark ? const Color(0xFF13151A) : Colors.white.withOpacity(0.9),
         elevation: 0,
         scrolledUnderElevation: 1.5,
         title: Obx(
           () => Text(
-            controller.selectedNavIndex.value.label,
-            style: const TextStyle(
+            controller.selectedNavIndex.value.translatedLabel,
+            style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 18,
-              color: Colors.black87,
+              color: isDark ? Colors.white : Colors.black87,
             ),
           ),
         ),
@@ -31,9 +33,9 @@ class MobileHome extends GetView<HomeController> {
               return Badge(
                 label: Text(count.toString()),
                 isLabelVisible: count > 0,
-                child: const Icon(
+                child: Icon(
                   Icons.notifications_outlined,
-                  color: Colors.black54,
+                  color: isDark ? Colors.grey.shade300 : Colors.black54,
                 ),
               );
             }),
@@ -44,7 +46,7 @@ class MobileHome extends GetView<HomeController> {
               arrowOffset: 16,
               borderRadius: 16,
             ),
-            color: Colors.white,
+            color: isDark ? const Color(0xFF1E222B) : Colors.white,
             itemBuilder: (context) {
               return [
                 PopupMenuItem<void>(
@@ -66,7 +68,9 @@ class MobileHome extends GetView<HomeController> {
                                 children: [
                                   Icon(
                                     Icons.notifications_active_rounded,
-                                    color: Theme.of(context).colorScheme.primary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                     size: 16,
                                   ),
                                   const SizedBox(width: 8),
@@ -82,7 +86,10 @@ class MobileHome extends GetView<HomeController> {
                               ),
                               if (count > 0)
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Colors.red.shade50,
                                     borderRadius: BorderRadius.circular(10),
@@ -123,13 +130,16 @@ class MobileHome extends GetView<HomeController> {
                                 shrinkWrap: true,
                                 physics: const ClampingScrollPhysics(),
                                 itemCount: items.length,
-                                separatorBuilder: (_, index) => const SizedBox(height: 10),
+                                separatorBuilder: (_, index) =>
+                                    const SizedBox(height: 10),
                                 itemBuilder: (context, idx) {
                                   final notif = items[idx];
                                   return GestureDetector(
                                     behavior: HitTestBehavior.opaque,
                                     onTap: () {
-                                      controller.markNotificationAsRead(notif.id);
+                                      controller.markNotificationAsRead(
+                                        notif.id,
+                                      );
                                       Navigator.of(context).pop();
                                     },
                                     child: Opacity(
@@ -157,13 +167,17 @@ class MobileHome extends GetView<HomeController> {
                             },
                             child: Center(
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4,
+                                ),
                                 child: Text(
                                   'Tandai semua telah dibaca',
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).colorScheme.primary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                   ),
                                 ),
                               ),
@@ -177,17 +191,39 @@ class MobileHome extends GetView<HomeController> {
               ];
             },
           ),
+
+          const SizedBox(width: 8),
           Builder(
             builder: (context) => IconButton(
-              icon: const Icon(Icons.settings_outlined, color: Colors.black54),
+              icon: Icon(
+                Icons.settings_outlined,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               onPressed: () => Scaffold.of(context).openEndDrawer(),
             ),
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.logout_rounded,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            onPressed: () {
+              SecureStorageServices.to.writeBool('is_logged_in', false);
+              SecureStorageServices.to.writeBool('is_locked', false);
+              Get.offAllNamed(
+                Routes.authentifikasi,
+                arguments: {'mode': 'login'},
+              );
+            },
           ),
           const SizedBox(width: 8),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(color: Colors.grey.shade100, height: 1),
+          child: Container(
+            color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade100,
+            height: 1,
+          ),
         ),
       ),
       body: SafeArea(bottom: false, child: child),
@@ -196,16 +232,21 @@ class MobileHome extends GetView<HomeController> {
   }
 
   Widget _buildGlassmorphicBottomBar(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
       height: 64,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
+        color: isDark ? const Color(0xFF13151A).withOpacity(0.9) : Colors.white.withOpacity(0.9),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.4), width: 1.5),
+        border: Border.all(
+          color: isDark ? const Color(0xFF2E3440) : Colors.white.withOpacity(0.4),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withOpacity(isDark ? 0.25 : 0.06),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -213,12 +254,11 @@ class MobileHome extends GetView<HomeController> {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
-        child: Obx(
-          () {
-            final items = NavMenu.byRole(controller.userProfile.value?.role);
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: items.map((menu) {
+        child: Obx(() {
+          final items = NavMenu.byRole(controller.userProfile.value?.role);
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: items.map((menu) {
               final isSelected = controller.selectedNavIndex.value == menu;
               return GestureDetector(
                 onTap: () => controller.toNavigation(menu.index),
@@ -237,15 +277,15 @@ class MobileHome extends GetView<HomeController> {
                         ),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? Colors.blue.shade50
+                              ? theme.colorScheme.primary.withOpacity(0.12)
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Icon(
                           menu.icon,
                           color: isSelected
-                              ? Colors.blue
-                              : Colors.grey.shade500,
+                              ? theme.colorScheme.primary
+                              : (isDark ? Colors.grey.shade400 : Colors.grey.shade500),
                           size: 22,
                         ),
                       ),
@@ -255,11 +295,11 @@ class MobileHome extends GetView<HomeController> {
                         width: isSelected ? 4 : 0,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: Colors.blue,
+                          color: theme.colorScheme.primary,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.blue.withOpacity(0.4),
+                              color: theme.colorScheme.primary.withOpacity(0.4),
                               blurRadius: 4,
                               spreadRadius: 1,
                             ),
@@ -272,11 +312,10 @@ class MobileHome extends GetView<HomeController> {
               );
             }).toList(),
           );
-        },
+        }),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildNotificationItem({
     required String title,
@@ -314,10 +353,7 @@ class MobileHome extends GetView<HomeController> {
                   ),
                   Text(
                     time,
-                    style: TextStyle(
-                      fontSize: 8,
-                      color: Colors.grey.shade500,
-                    ),
+                    style: TextStyle(fontSize: 8, color: Colors.grey.shade500),
                   ),
                 ],
               ),
@@ -356,10 +392,14 @@ class MobileHome extends GetView<HomeController> {
     if (rating != null && rating <= 2) {
       return Icons.warning_amber_rounded;
     }
-    if (title.contains('negatif') || title.contains('warning') || title.contains('error')) {
+    if (title.contains('negatif') ||
+        title.contains('warning') ||
+        title.contains('error')) {
       return Icons.warning_amber_rounded;
     }
-    if (title.contains('terkirim') || title.contains('sukses') || title.contains('success')) {
+    if (title.contains('terkirim') ||
+        title.contains('sukses') ||
+        title.contains('success')) {
       return Icons.check_circle_rounded;
     }
     return Icons.rss_feed_rounded;
@@ -371,10 +411,14 @@ class MobileHome extends GetView<HomeController> {
     if (rating != null && rating <= 2) {
       return const Color(0xFFF59E0B);
     }
-    if (title.contains('negatif') || title.contains('warning') || title.contains('error')) {
+    if (title.contains('negatif') ||
+        title.contains('warning') ||
+        title.contains('error')) {
       return const Color(0xFFEF4444);
     }
-    if (title.contains('terkirim') || title.contains('sukses') || title.contains('success')) {
+    if (title.contains('terkirim') ||
+        title.contains('sukses') ||
+        title.contains('success')) {
       return const Color(0xFF10B981);
     }
     return const Color(0xFF6366F1);

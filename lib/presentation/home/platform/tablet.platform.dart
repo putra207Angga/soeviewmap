@@ -104,7 +104,7 @@ class TabletHome extends GetView<HomeController> {
                   final menu = items[index];
                   final isSelected = controller.selectedNavIndex.value == menu;
                   return Tooltip(
-                    message: menu.label,
+                    message: menu.translatedLabel,
                     preferBelow: false,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10),

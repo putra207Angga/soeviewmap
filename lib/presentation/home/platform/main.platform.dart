@@ -23,7 +23,7 @@ class ResponsiveHome extends GetView<HomeController> {
 
     if (width < 600) {
       return MobileHome(child: child);
-    } else if (width < 1000) {
+    } else if (width < 1024) {
       return TabletHome(child: child);
     } else {
       return DesktopHome(child: child);

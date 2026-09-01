@@ -2,7 +2,7 @@ part of 'main.components.dart';
 
 class AiReplyDialog extends StatefulWidget {
   const AiReplyDialog({super.key, required this.review});
-  final ReviewModel review;
+  final ReviewUiModel review;
 
   @override
   State<AiReplyDialog> createState() => _AiReplyDialogState();
@@ -41,7 +41,10 @@ class _AiReplyDialogState extends State<AiReplyDialog> {
       child: Material(
         color: Colors.transparent,
         child: Container(
-          width: 500,
+          constraints: BoxConstraints(
+            maxWidth: 500,
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+          ),
           margin: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1E222B) : Colors.white,
@@ -91,9 +94,9 @@ class _AiReplyDialogState extends State<AiReplyDialog> {
                       ),
                     ),
                     const SizedBox(width: 10),
-                    const Text(
-                      'AI Smart Reply Assistant',
-                      style: TextStyle(
+                    Text(
+                      'ai_smart_reply'.tr,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                       ),
@@ -161,7 +164,7 @@ class _AiReplyDialogState extends State<AiReplyDialog> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '"${widget.review.comment}"',
+                              '"${Get.find<HomeController>().censorText(widget.review.comment)}"',
                               style: TextStyle(
                                 fontSize: 11,
                                 color: isDark
@@ -222,7 +225,7 @@ class _AiReplyDialogState extends State<AiReplyDialog> {
                   children: [
                     TextButton(
                       onPressed: () => Get.back(),
-                      child: const Text('Batal'),
+                      child: Text('cancel'.tr),
                     ),
                     const SizedBox(width: 8),
                     Obx(() {
@@ -232,7 +235,7 @@ class _AiReplyDialogState extends State<AiReplyDialog> {
                             ? null
                             : () {
                                 controller.submitReply(
-                                  widget.review.id,
+                                  widget.review.reviewId,
                                   _replyTextController.text,
                                 );
                                 Get.back();
@@ -245,9 +248,9 @@ class _AiReplyDialogState extends State<AiReplyDialog> {
                                 );
                               },
                         icon: const Icon(Icons.send_rounded, size: 14),
-                        label: const Text(
-                          'Kirim Balasan',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                        label: Text(
+                          'send_reply'.tr,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: theme.colorScheme.primary,
@@ -274,7 +277,13 @@ class _AiReplyDialogState extends State<AiReplyDialog> {
   }
 
   Widget _buildToneSelector() {
-    final tones = ['Gen Z Slang', 'Professional', 'Friendly', 'Concise'];
+    final tones = [
+      'Gen Z Slang',
+      'Professional',
+      'Friendly',
+      'Concise',
+      'Template',
+    ];
     return Wrap(
       spacing: 6,
       runSpacing: 6,
@@ -290,6 +299,9 @@ class _AiReplyDialogState extends State<AiReplyDialog> {
             break;
           case 'Friendly':
             toneColor = const Color(0xFF10B981); // Emerald
+            break;
+          case 'Template':
+            toneColor = const Color(0xFFF59E0B); // Amber
             break;
           default:
             toneColor = const Color(0xFF6B7280); // Gray
@@ -317,11 +329,31 @@ class _AiReplyDialogState extends State<AiReplyDialog> {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           labelPadding: EdgeInsets.zero,
           showCheckmark: false,
-          onSelected: (selected) {
+          onSelected: (selected) async {
             if (selected) {
               setState(() {
                 _selectedTone = tone;
               });
+
+              if (_selectedTone == "Template") {
+                final templateCtrl = Get.find<TemplateController>();
+                final reviewRating =
+                    widget.review.rating.round().clamp(1, 5);
+                final templateText =
+                    templateCtrl.starTemplates[reviewRating];
+
+                if (templateText != null && templateText.isNotEmpty) {
+                  final applied = templateText
+                      .replaceAll(
+                          '{reviewerName}', widget.review.reviewerName)
+                      .replaceAll(
+                          '{locationName}', widget.review.locationName);
+                  _replyTextController.text = applied;
+                  controller.generatedReply.value = applied;
+                  return;
+                }
+                // No template for this rating — fallback to AI draft
+              }
               _generateDraft();
             }
           },

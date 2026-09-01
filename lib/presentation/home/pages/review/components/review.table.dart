@@ -14,57 +14,65 @@ class ReviewTableComponent extends GetView<ReviewController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // 1. Table Header & Content (with horizontal scrolling on small viewports)
+          // 1. Table Header & Content (responsive width based on constraints)
           Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SizedBox(
-                width:
-                    900, // Fixed width inside scrollable view to keep table columns proportional
-                child: Column(
-                  children: [
-                    // Table Header Row
-                    _buildTableHeaderRow(isDark),
-                    Divider(
-                      height: 1,
-                      color: isDark
-                          ? const Color(0xFF2E3440)
-                          : Colors.grey.shade200,
-                    ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // Stretch to fill card if constraints allow, minimum width 900
+                final tableWidth = constraints.maxWidth > 900
+                    ? constraints.maxWidth
+                    : 900.0;
 
-                    // Table Rows
-                    Expanded(
-                      child: Obx(() {
-                        if (controller.isLoading.value) {
-                          return _buildLoadingState(isDark);
-                        }
-                        final items = controller.paginatedReviews;
-                        if (items.isEmpty) {
-                          return _buildEmptyState(isDark);
-                        }
-                        return ListView.separated(
-                          itemCount: items.length,
-                          separatorBuilder: (context, index) => Divider(
-                            height: 1,
-                            color: isDark
-                                ? const Color(0xFF2E3440).withOpacity(0.5)
-                                : Colors.grey.shade100,
-                          ),
-                          itemBuilder: (context, index) {
-                            final review = items[index];
-                            return _buildReviewRow(
-                              context,
-                              review,
-                              isDark,
-                              theme,
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: SizedBox(
+                    width: tableWidth,
+                    child: Column(
+                      children: [
+                        // Table Header Row
+                        _buildTableHeaderRow(isDark),
+                        Divider(
+                          height: 1,
+                          color: isDark
+                              ? const Color(0xFF2E3440)
+                              : Colors.grey.shade200,
+                        ),
+
+                        // Table Rows
+                        Expanded(
+                          child: Obx(() {
+                            if (controller.isLoading.value) {
+                              return _buildLoadingState(isDark);
+                            }
+                            final items = controller.paginatedReviews;
+                            if (items.isEmpty) {
+                              return _buildEmptyState(isDark);
+                            }
+                            return ListView.separated(
+                              itemCount: items.length,
+                              separatorBuilder: (context, index) => Divider(
+                                height: 1,
+                                color: isDark
+                                    ? const Color(0xFF2E3440).withOpacity(0.5)
+                                    : Colors.grey.shade100,
+                              ),
+                              itemBuilder: (context, index) {
+                                final review = items[index];
+                                return _buildReviewRow(
+                                  context,
+                                  review,
+                                  isDark,
+                                  theme,
+                                );
+                              },
                             );
-                          },
-                        );
-                      }),
+                          }),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
           ),
 
@@ -93,16 +101,16 @@ class ReviewTableComponent extends GetView<ReviewController> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          SizedBox(width: 160, child: Text('Pengguna', style: headerStyle)),
-          SizedBox(width: 100, child: Text('Date', style: headerStyle)),
-          SizedBox(width: 100, child: Text('Rating', style: headerStyle)),
-          Expanded(child: Text('Ulasan', style: headerStyle)),
-          SizedBox(width: 100, child: Text('Status', style: headerStyle)),
+          SizedBox(width: 160, child: Text('reviewer'.tr, style: headerStyle)),
+          SizedBox(width: 100, child: Text('date'.tr, style: headerStyle)),
+          SizedBox(width: 100, child: Text('rating'.tr, style: headerStyle)),
+          Expanded(child: Text('nav_review'.tr, style: headerStyle)),
+          SizedBox(width: 100, child: Text('status'.tr, style: headerStyle)),
           SizedBox(
             width: 120,
             child: Align(
               alignment: Alignment.centerRight,
-              child: Text('Aksi', style: headerStyle),
+              child: Text('action'.tr, style: headerStyle),
             ),
           ),
         ],
@@ -112,7 +120,7 @@ class ReviewTableComponent extends GetView<ReviewController> {
 
   Widget _buildReviewRow(
     BuildContext context,
-    ReviewModel item,
+    ReviewUiModel item,
     bool isDark,
     ThemeData theme,
   ) {
@@ -232,7 +240,7 @@ class ReviewTableComponent extends GetView<ReviewController> {
             child: Obx(() {
               final replied = item.replyText.value.isNotEmpty;
               return GlowBadge(
-                label: replied ? 'REPLIED' : 'PENDING',
+                label: replied ? 'status_replied'.tr : 'status_pending'.tr,
                 color: replied
                     ? const Color(0xFF10B981)
                     : const Color(0xFFF43F5E),
@@ -251,11 +259,13 @@ class ReviewTableComponent extends GetView<ReviewController> {
                   return TextButton(
                     onPressed: () => _openViewThreadDialog(context, item),
                     child: Text(
-                      'View Thread',
+                      'view_thread'.tr,
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? const Color(0xFF818CF8) : theme.colorScheme.primary,
+                        color: isDark
+                            ? const Color(0xFF818CF8)
+                            : theme.colorScheme.primary,
                       ),
                     ),
                   );
@@ -273,9 +283,9 @@ class ReviewTableComponent extends GetView<ReviewController> {
                         ),
                         elevation: 0,
                       ),
-                      child: const Text(
-                        'Quick Reply',
-                        style: TextStyle(
+                      child: Text(
+                        'quick_reply'.tr,
+                        style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                         ),
@@ -296,14 +306,10 @@ class ReviewTableComponent extends GetView<ReviewController> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.search_off_rounded,
-            size: 48,
-            color: Colors.grey.shade500,
-          ),
+          Icon(Icons.search_off_rounded, size: 48, color: Colors.grey.shade500),
           const SizedBox(height: 12),
           Text(
-            'Tidak ada ulasan ditemukan',
+            'no_reviews_found'.tr,
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
@@ -311,9 +317,9 @@ class ReviewTableComponent extends GetView<ReviewController> {
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'Ganti filter Anda untuk mencari yang lain.',
-            style: TextStyle(fontSize: 11, color: Colors.grey),
+          Text(
+            'change_filter_desc'.tr,
+            style: const TextStyle(fontSize: 11, color: Colors.grey),
           ),
         ],
       ),
@@ -328,13 +334,11 @@ class ReviewTableComponent extends GetView<ReviewController> {
           const SizedBox(
             width: 32,
             height: 32,
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-            ),
+            child: CircularProgressIndicator(strokeWidth: 3),
           ),
           const SizedBox(height: 12),
           Text(
-            'Memuat data ulasan...',
+            'loading_reviews'.tr,
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
@@ -398,12 +402,15 @@ class ReviewTableComponent extends GetView<ReviewController> {
         pageButtons.add(_buildPageNumberButton(pages, current, theme, isDark));
       }
 
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      return Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 12,
+        runSpacing: 8,
         children: [
           // Left: Showing count description
           Text(
-            'Showing $start-$end of $total reviews',
+            'showing_reviews_count'.trParams({'start': '$start', 'end': '$end', 'total': '$total'}),
             style: TextStyle(
               fontSize: 11,
               color: Colors.grey.shade500,
@@ -412,30 +419,33 @@ class ReviewTableComponent extends GetView<ReviewController> {
           ),
 
           // Right: Page buttons
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Prev Button
-              _buildPaginationButton(
-                icon: Icons.keyboard_arrow_left_rounded,
-                enabled: current > 1,
-                isDark: isDark,
-                onTap: () => controller.changePage(current - 1),
-              ),
-              const SizedBox(width: 4),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Prev Button
+                _buildPaginationButton(
+                  icon: Icons.keyboard_arrow_left_rounded,
+                  enabled: current > 1,
+                  isDark: isDark,
+                  onTap: () => controller.changePage(current - 1),
+                ),
+                const SizedBox(width: 4),
 
-              // Page numbers list
-              ...pageButtons,
+                // Page numbers list
+                ...pageButtons,
 
-              const SizedBox(width: 4),
-              // Next Button
-              _buildPaginationButton(
-                icon: Icons.keyboard_arrow_right_rounded,
-                enabled: current < pages,
-                isDark: isDark,
-                onTap: () => controller.changePage(current + 1),
-              ),
-            ],
+                const SizedBox(width: 4),
+                // Next Button
+                _buildPaginationButton(
+                  icon: Icons.keyboard_arrow_right_rounded,
+                  enabled: current < pages,
+                  isDark: isDark,
+                  onTap: () => controller.changePage(current + 1),
+                ),
+              ],
+            ),
           ),
         ],
       );
@@ -453,10 +463,7 @@ class ReviewTableComponent extends GetView<ReviewController> {
       onTap: () => controller.changePage(pageNum),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 2),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 10,
-          vertical: 6,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected ? theme.colorScheme.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(6),
@@ -523,7 +530,7 @@ class ReviewTableComponent extends GetView<ReviewController> {
     );
   }
 
-  void _openQuickReplyDialog(BuildContext context, ReviewModel item) {
+  void _openQuickReplyDialog(BuildContext context, ReviewUiModel item) {
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -534,7 +541,7 @@ class ReviewTableComponent extends GetView<ReviewController> {
     );
   }
 
-  void _openViewThreadDialog(BuildContext context, ReviewModel item) {
+  void _openViewThreadDialog(BuildContext context, ReviewUiModel item) {
     showDialog(
       context: context,
       builder: (context) {
@@ -543,7 +550,10 @@ class ReviewTableComponent extends GetView<ReviewController> {
           child: Material(
             color: Colors.transparent,
             child: Container(
-              width: 480,
+              constraints: BoxConstraints(
+                maxWidth: 480,
+                maxHeight: MediaQuery.of(context).size.height * 0.85,
+              ),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF1E222B) : Colors.white,
@@ -577,128 +587,138 @@ class ReviewTableComponent extends GetView<ReviewController> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  // Review Bubble
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.black.withOpacity(0.2)
-                          : Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              item.reviewerName,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            RatingStars(rating: item.rating, size: 10),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        Obx(() {
-                          final controller = Get.find<HomeController>();
-                          return Text(
-                            '"${controller.censorText(item.comment)}"',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          );
-                        }),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  // Response Bubble
-                  Obx(() {
-                    final reply = item.replyText.value;
-                    return Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.primary.withOpacity(0.06),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.primary.withOpacity(0.2),
-                        ),
-                      ),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
+                          // Review Bubble
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? Colors.black.withOpacity(0.2)
+                                  : Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      item.reviewerName,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    RatingStars(rating: item.rating, size: 10),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                Obx(() {
+                                  final controller = Get.find<HomeController>();
+                                  return Text(
+                                    '"${controller.censorText(item.comment)}"',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  );
+                                }),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          // Response Bubble
+                          Obx(() {
+                            final reply = item.replyText.value;
+                            return Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.primary.withOpacity(0.06),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primary.withOpacity(0.2),
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Icon(
-                                    Icons.admin_panel_settings_rounded,
-                                    size: 12,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.admin_panel_settings_rounded,
+                                            size: 12,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Tanggapan Mimin RSUD Soebandi',
+                                            style: TextStyle(
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.bold,
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.primary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          controller.deleteReply(item.id);
+                                          Get.back();
+                                          Get.snackbar(
+                                            'Tanggapan Dihapus',
+                                            'Balasan untuk ${item.reviewerName} berhasil dihapus.',
+                                          );
+                                        },
+                                        style: TextButton.styleFrom(
+                                          padding: EdgeInsets.zero,
+                                          minimumSize: Size.zero,
+                                          tapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                        child: const Text(
+                                          'Hapus',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.redAccent,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 4),
+                                  const SizedBox(height: 6),
                                   Text(
-                                    'Tanggapan Mimin RSUD Soebandi',
-                                    style: TextStyle(
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.bold,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.primary,
+                                    reply,
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontStyle: FontStyle.italic,
                                     ),
                                   ),
                                 ],
                               ),
-                              TextButton(
-                                onPressed: () {
-                                  controller.deleteReply(item.id);
-                                  Get.back();
-                                  Get.snackbar(
-                                    'Tanggapan Dihapus',
-                                    'Balasan untuk ${item.reviewerName} berhasil dihapus.',
-                                  );
-                                },
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.zero,
-                                  minimumSize: Size.zero,
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                child: const Text(
-                                  'Hapus',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: Colors.redAccent,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            reply,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
+                            );
+                          }),
                         ],
                       ),
-                    );
-                  }),
+                    ),
+                  ),
                 ],
               ),
             ),

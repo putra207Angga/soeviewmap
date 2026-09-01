@@ -19,11 +19,23 @@ class HomeController extends GetxController {
   final isFilterProfanity = true.obs;
   final isDarkMode = false.obs;
   final notificationLimit = 50.obs;
+  final selectedLanguage = 'id_ID'.obs;
 
   @override
   void onInit() {
     super.onInit();
-    // Load Settings
+    loadSettings();
+
+    fetchUserProfile().then((_) {
+      if (userProfile.value != null) {
+        fetchNotifications();
+        fetchUnreadCount();
+        startPolling();
+      }
+    });
+  }
+
+  void loadSettings() {
     isFilterProfanity.value = SecureStorageServices.to.readBool(
       'settings_filter_profanity',
       defaultValue: true,
@@ -37,14 +49,8 @@ class HomeController extends GetxController {
           SecureStorageServices.to.read('settings_notification_limit') ?? '50',
         ) ??
         50;
-
-    fetchUserProfile().then((_) {
-      if (userProfile.value != null) {
-        fetchNotifications();
-        fetchUnreadCount();
-        startPolling();
-      }
-    });
+    selectedLanguage.value =
+        SecureStorageServices.to.read('settings_app_language') ?? 'id_ID';
   }
 
   Future<void> fetchUserProfile() async {
@@ -89,7 +95,9 @@ class HomeController extends GetxController {
 
   Future<void> fetchUnreadCount() async {
     try {
-      final response = await NotificationDao.use.getUnreadCount();
+      final response = await NotificationDao.use.getUnreadCount(
+        limit: notificationLimit.value,
+      );
       if (response.statusCode == 200 && response.body != null) {
         unreadCount.value = response.body!;
       }
@@ -128,7 +136,9 @@ class HomeController extends GetxController {
   Future<void> markAllNotificationsAsRead() async {
     try {
       final response = await NotificationDao.use.markAllAsRead();
-      if (response.statusCode == 200 && response.body == true) {
+      if (response.statusCode == 200 ||
+          response.statusCode == 204 ||
+          response.body == true) {
         for (var i = 0; i < notifications.length; i++) {
           final oldNotif = notifications[i];
           if (!oldNotif.isRead) {
@@ -147,6 +157,10 @@ class HomeController extends GetxController {
         }
         notifications.refresh();
         unreadCount.value = 0;
+
+        // Re-fetch notifications and unread count from /api/notifications?limit={limit}&unread_only=true
+        await fetchNotifications();
+        await fetchUnreadCount();
       }
     } catch (e) {
       print('HomeController: markAllNotificationsAsRead exception: $e');
@@ -155,7 +169,7 @@ class HomeController extends GetxController {
 
   void startPolling() {
     _pollingTimer?.cancel();
-    _pollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+    _pollingTimer = Timer.periodic(const Duration(minutes: 5), (_) {
       if (userProfile.value != null) {
         fetchNotifications();
         fetchUnreadCount();
@@ -225,17 +239,20 @@ class HomeController extends GetxController {
       'settings_notification_limit',
       notificationLimit.value.toString(),
     );
+    // Save & apply language change
+    TranslationService.changeLanguage(selectedLanguage.value);
 
     // Apply theme change
     Get.changeThemeMode(isDarkMode.value ? ThemeMode.dark : ThemeMode.light);
 
     // Refresh notifications with new limit
     fetchNotifications();
+    fetchUnreadCount();
 
     Get.back();
     Get.snackbar(
-      'Berhasil Disimpan',
-      'Seluruh konfigurasi settings berhasil disimpan.',
+      'save_settings'.tr,
+      'language_changed'.tr,
       snackPosition: SnackPosition.BOTTOM,
       backgroundColor: Colors.green.shade50,
       colorText: Colors.green.shade900,
@@ -245,31 +262,14 @@ class HomeController extends GetxController {
     );
   }
 
+  static final RegExp _profanityRegExp = RegExp(
+    r'(anjing|babi|goblok|tolol|bangsat|kontol|memek|peler|ngentot|jembut|pantek|asu|bajingan)',
+    caseSensitive: false,
+  );
+
   String censorText(String text) {
-    if (!isFilterProfanity.value) return text;
-    final badWords = [
-      'anjing',
-      'babi',
-      'goblok',
-      'tolol',
-      'bangsat',
-      'kontol',
-      'memek',
-      'peler',
-      'ngentot',
-      'jembut',
-      'pantek',
-      'asu',
-      'bajingan',
-    ];
-    String censored = text;
-    for (final word in badWords) {
-      censored = censored.replaceAll(
-        RegExp(RegExp.escape(word), caseSensitive: false),
-        '***',
-      );
-    }
-    return censored;
+    if (!isFilterProfanity.value || text.isEmpty) return text;
+    return text.replaceAll(_profanityRegExp, '***');
   }
 
   void toNavigation(int index) {

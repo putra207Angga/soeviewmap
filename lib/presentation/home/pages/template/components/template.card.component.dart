@@ -22,7 +22,7 @@ class TemplateCard extends StatelessWidget {
     return GlassContainer(
       glowColor: theme.colorScheme.primary,
       glowOpacity: 0.005,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -38,7 +38,7 @@ class TemplateCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '- Bintang $rating',
+                    '- ${"star_label".tr} $rating',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
@@ -53,9 +53,9 @@ class TemplateCard extends StatelessWidget {
                   OutlinedButton.icon(
                     onPressed: onEditTap,
                     icon: const Icon(Icons.edit_outlined, size: 13),
-                    label: const Text(
-                      'Edit',
-                      style: TextStyle(
+                    label: Text(
+                      'edit'.tr,
+                      style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                       ),
@@ -65,7 +65,7 @@ class TemplateCard extends StatelessWidget {
                       side: BorderSide(
                         color: theme.colorScheme.primary.withOpacity(0.4),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -78,9 +78,9 @@ class TemplateCard extends StatelessWidget {
                     IconButton(
                       onPressed: onDeleteTap,
                       icon: const Icon(Icons.delete_outline_rounded, size: 16, color: Colors.redAccent),
-                      tooltip: 'Hapus Template',
+                      tooltip: 'delete_template_title'.tr,
                       constraints: const BoxConstraints(),
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(6),
                       style: IconButton.styleFrom(
                         backgroundColor: Colors.red.withOpacity(0.04),
                         shape: RoundedRectangleBorder(
@@ -97,10 +97,10 @@ class TemplateCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           // Template message block (quotes)
           Container(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
               color: isDark
                   ? Colors.black.withOpacity(0.12)
@@ -120,7 +120,7 @@ class TemplateCard extends StatelessWidget {
                   templateText.isEmpty
                       ? Icons.info_outline_rounded
                       : Icons.format_quote_rounded,
-                  size: 20,
+                  size: 18,
                   color: templateText.isEmpty
                       ? Colors.orange.withOpacity(0.6)
                       : theme.colorScheme.primary.withOpacity(0.5),
@@ -132,13 +132,15 @@ class TemplateCard extends StatelessWidget {
                         ? 'Belum ada template balasan untuk rating bintang $rating. Silakan klik tombol Edit di atas untuk menyusun template baru.'
                         : templateText,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 11.5,
                       fontStyle: FontStyle.italic,
                       color: templateText.isEmpty
                           ? (isDark ? Colors.grey.shade500 : Colors.grey.shade400)
                           : (isDark ? Colors.grey.shade300 : Colors.grey.shade700),
-                      height: 1.4,
+                      height: 1.35,
                     ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],

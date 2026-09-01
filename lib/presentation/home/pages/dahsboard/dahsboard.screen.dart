@@ -95,51 +95,57 @@ class DahsboardScreen extends GetView<DahsboardController> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(
-                  'Review Comment Google Map',
-                  style: TextStyle(
-                    fontSize: context.width > 600 ? 22 : 18,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    'VIBE CHECK',
-                    style: TextStyle(
-                      fontSize: 8,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                      letterSpacing: 0.5,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      'app_title'.tr,
+                      style: TextStyle(
+                        fontSize: context.width > 600 ? 22 : 18,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Moderasi sentimen ulasan & balas ulasan RS Soebandi dengan AI Assistant.',
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-            ),
-          ],
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      'VIBE CHECK',
+                      style: TextStyle(
+                        fontSize: 8,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'app_subtitle'.tr,
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+              ),
+            ],
+          ),
         ),
-        if (context.width > 600)
+        if (context.width > 600) ...[
+          const SizedBox(width: 16),
           ElevatedButton.icon(
             onPressed: () {
               controller.resetFilters();
@@ -150,9 +156,9 @@ class DahsboardScreen extends GetView<DahsboardController> {
               );
             },
             icon: const Icon(Icons.filter_list_off_rounded, size: 16),
-            label: const Text(
-              'Reset Filter',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            label: Text(
+              'reset_filter'.tr,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: isDark ? const Color(0xFF2E3440) : Colors.white,
@@ -168,6 +174,7 @@ class DahsboardScreen extends GetView<DahsboardController> {
               elevation: 0,
             ),
           ),
+        ],
       ],
     );
   }

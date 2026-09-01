@@ -19,7 +19,10 @@ class BalasDetailsDialog extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: Container(
-          width: 500,
+          constraints: BoxConstraints(
+            maxWidth: 500,
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+          ),
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
@@ -45,9 +48,9 @@ class BalasDetailsDialog extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Detail Log & Tanggapan',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  Text(
+                    'detail_log_title'.tr,
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                   IconButton(
                     onPressed: () => Get.back(),
@@ -63,6 +66,12 @@ class BalasDetailsDialog extends StatelessWidget {
                 color: isDark ? const Color(0xFF2E3440) : Colors.grey.shade200,
               ),
               const SizedBox(height: 12),
+              Flexible(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
 
               // 1. User & Review Info
               Row(
@@ -109,7 +118,7 @@ class BalasDetailsDialog extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  logItem.reviewText.isEmpty ? '-' : '"${logItem.reviewText}"',
+                  logItem.reviewText.isEmpty ? '-' : '"${Get.find<HomeController>().censorText(logItem.reviewText)}"',
                   style: TextStyle(
                     fontSize: 11,
                     fontStyle: FontStyle.italic,
@@ -122,7 +131,7 @@ class BalasDetailsDialog extends StatelessWidget {
 
               // 2. Admin Response View
               Text(
-                'TANGGAPAN ADMIN / BOT',
+                'admin_reply_header'.tr,
                 style: TextStyle(
                   fontSize: 9,
                   fontWeight: FontWeight.bold,
@@ -202,8 +211,12 @@ class BalasDetailsDialog extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
+    ],
+  ),
+),
+),
+);
+}
 }
 
 class UserProfileDialog extends StatelessWidget {

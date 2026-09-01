@@ -23,7 +23,7 @@ class LogBotFiltersPanel extends GetView<LogBotController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Log Bot',
+                'nav_log_bot'.tr,
                 style: TextStyle(
                   fontSize: context.width > 600 ? 28 : 22,
                   fontWeight: FontWeight.w900,
@@ -33,7 +33,7 @@ class LogBotFiltersPanel extends GetView<LogBotController> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Audit log aktivitas sinkronisasi dan auto-reply ulasan Google Maps',
+                'log_bot_subtitle'.tr,
                 style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
               ),
             ],
@@ -62,7 +62,7 @@ class LogBotFiltersPanel extends GetView<LogBotController> {
                   onChanged: (val) => controller.searchQuery.value = val,
                   style: const TextStyle(fontSize: 12),
                   decoration: InputDecoration(
-                    hintText: 'Cari log...',
+                    hintText: 'search_log'.tr,
                     hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 12),
                     prefixIcon: Icon(Icons.search, size: 16, color: Colors.grey.shade400),
                     border: InputBorder.none,
@@ -100,6 +100,13 @@ class LogBotFiltersPanel extends GetView<LogBotController> {
       ),
       child: Obx(() {
         final current = controller.selectedLevel.value;
+        final labelMap = {
+          'All': 'level_all'.tr,
+          'Success': 'level_success'.tr,
+          'Info': 'level_info'.tr,
+          'Warning': 'level_warning'.tr,
+          'Error': 'level_error'.tr,
+        };
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: ['All', 'Success', 'Info', 'Warning', 'Error'].map((level) {
@@ -121,7 +128,7 @@ class LogBotFiltersPanel extends GetView<LogBotController> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  level,
+                  labelMap[level] ?? level,
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,

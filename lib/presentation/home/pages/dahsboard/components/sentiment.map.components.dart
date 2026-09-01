@@ -17,26 +17,28 @@ class SentimentMapComponent extends GetView<DahsboardController> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Peta Google Maps RSUD Soebandi',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Klik pin departemen pada Google Maps untuk filter ulasan',
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-                  ),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'map_title'.tr,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'map_subtitle'.tr,
+                      style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                    ),
+                  ],
+                ),
               ),
               Obx(() {
                 if (controller.selectedLocation.value != null) {
                   return TextButton.icon(
                     onPressed: () => controller.filterByLocation(null),
                     icon: const Icon(Icons.refresh_rounded, size: 16),
-                    label: const Text('Reset Filter'),
+                    label: Text('reset_filter'.tr),
                     style: TextButton.styleFrom(
                       foregroundColor: theme.colorScheme.primary,
                       textStyle: const TextStyle(
